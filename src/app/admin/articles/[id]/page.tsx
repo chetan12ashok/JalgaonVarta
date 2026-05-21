@@ -1,18 +1,19 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import WhatsAppShare from "@/components/admin/WhatsAppShare";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import WhatsAppShare from "@/components/admin/WhatsAppShare";
 
 interface Category { id: string; name: string; }
 interface Article {
   id: string; title: string; excerpt: string; content: string;
-  shortContent: string | null;
-  imageUrl: string | null; status: string; categoryId: string;
-  categoryName: string; categoryColor: string;
-  originalTitle: string | null; sourceUrl: string | null;
-  views: number; slug: string;
+  shortContent?: string | null; imageUrl: string | null;
+  status: string; categoryId: string; categoryName: string;
+  categoryColor: string; originalTitle: string | null;
+  sourceUrl: string | null; views: number; slug: string;
 }
+
+const MR = { fontFamily: "'Noto Sans Devanagari','Mukta',sans-serif" };
 
 export default function EditArticlePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -21,13 +22,13 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
   const [loading,    setLoading]    = useState(true);
   const [saving,     setSaving]     = useState(false);
   const [uploading,  setUploading]  = useState(false);
-  const [activeTab,  setActiveTab]  = useState<"content"|"media"|"seo">("content");
+  const [activeTab,  setActiveTab]  = useState<"content"|"media"|"shorts">("content");
   const [toast,      setToast]      = useState<{msg:string;type:"success"|"error"}|null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef    = useRef<HTMLDivElement>(null);
 
   const [title,      setTitle]      = useState("");
   const [excerpt,    setExcerpt]    = useState("");
-  const [content,    setContent]    = useState("");
   const [shortNews,  setShortNews]  = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [status,     setStatus]     = useState("");
@@ -46,18 +47,30 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
       setArticle(art);
       setTitle(art.title || "");
       setExcerpt(art.excerpt || "");
-      setContent(art.content || "");
       setShortNews(art.shortContent || art.shortNews || "");
       setCategoryId(art.categoryId || "");
       setStatus(art.status || "PENDING");
       setImageUrl(art.imageUrl || null);
       setCategories(cats || []);
+      // Set editor content after render
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.innerHTML = art.content || "";
+        }
+      }, 100);
       setLoading(false);
     }).catch(() => { showToast("Article लोड करताना error", "error"); setLoading(false); });
   }, [params.id]);
 
+  // ── Rich text toolbar ────────────────────────────────────────────────────
+  function exec(cmd: string, value?: string) {
+    document.execCommand(cmd, false, value);
+    editorRef.current?.focus();
+  }
+
   async function handleSave() {
-    if (!title.trim() || !content.trim() || !excerpt.trim()) {
+    const content = editorRef.current?.innerHTML || "";
+    if (!title.trim() || !content || !excerpt.trim()) {
       showToast("Title, Excerpt आणि Content आवश्यक आहे", "error");
       return;
     }
@@ -66,7 +79,11 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
       const res = await fetch(`/api/articles/${params.id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ title, excerpt, content, shortNews, shortContent: shortNews, categoryId, status, imageUrl }),
+        body:    JSON.stringify({
+          title, excerpt, content,
+          shortNews, shortContent: shortNews,
+          categoryId, status, imageUrl,
+        }),
       });
       if (!res.ok) throw new Error("Save failed");
       showToast("✅ बातमी अपडेट झाली!");
@@ -97,12 +114,20 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
     setUploading(false);
   }
 
-  const MR = { fontFamily: "'Noto Sans Devanagari', 'Mukta', sans-serif" };
+  const ToolbarBtn = ({ onClick, label, title }: { onClick: () => void; label: string; title: string }) => (
+    <button type="button" onClick={onClick} title={title} style={{
+      padding: "5px 10px", borderRadius: "6px",
+      border: "1px solid #e5e7eb", background: "#f9fafb",
+      color: "#374151", fontSize: "13px", fontWeight: 600,
+      cursor: "pointer", lineHeight: 1.4,
+    }}>{label}</button>
+  );
+
   const inputCls = "w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100";
 
   if (loading) return (
     <div className="p-8 text-center text-gray-400">
-      <div className="text-3xl mb-3 animate-pulse">⏳</div>
+      <div className="text-3xl mb-3">⏳</div>
       <p style={MR}>लोड होत आहे...</p>
     </div>
   );
@@ -110,17 +135,9 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
   if (!article) return (
     <div className="p-8 text-center">
       <p className="text-gray-500 mb-4">Article सापडला नाही</p>
-      <button onClick={() => router.push("/admin/articles")} className="px-4 py-2 bg-orange-500 text-white rounded-xl text-sm">
-        परत जा
-      </button>
+      <button onClick={() => router.push("/admin/articles")} className="px-4 py-2 bg-orange-500 text-white rounded-xl text-sm">परत जा</button>
     </div>
   );
-
-  const tabs = [
-    { id: "content", label: "📝 Content" },
-    { id: "media",   label: "🖼️ Thumbnail" },
-    { id: "seo",     label: "⚡ Shorts" },
-  ];
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl">
@@ -155,12 +172,11 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      {/* Category + Status — always visible */}
+      {/* Category + Status */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
-          <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
-            className={inputCls} style={MR}>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5" style={MR}>Category</label>
+          <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className={inputCls} style={MR}>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
@@ -176,7 +192,11 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
 
       {/* Tabs */}
       <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-xl w-fit">
-        {tabs.map(t => (
+        {[
+          { id: "content", label: "📝 Content" },
+          { id: "media",   label: "🖼️ Thumbnail" },
+          { id: "shorts",  label: "⚡ Shorts" },
+        ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id as any)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === t.id ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
@@ -191,28 +211,88 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
         {/* ── CONTENT TAB ── */}
         {activeTab === "content" && (
           <div className="space-y-5">
+
+            {/* Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">शीर्षक *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5" style={MR}>शीर्षक *</label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 className={inputCls} style={MR} />
             </div>
+
+            {/* Excerpt */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Excerpt (सारांश) *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5" style={MR}>Excerpt *</label>
               <textarea rows={2} value={excerpt} onChange={e => setExcerpt(e.target.value)}
                 className={`${inputCls} resize-none`} style={MR} />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Content *</label>
-              <textarea rows={14} value={content} onChange={e => setContent(e.target.value)}
-                className={`${inputCls} resize-none text-sm font-mono`} />
-              <p className="text-xs text-gray-400 mt-1">HTML: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;, &lt;ul&gt;</p>
-            </div>
+
+            {/* Original title ref */}
             {article.originalTitle && (
               <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <p className="text-xs text-gray-400 mb-1">Original Title</p>
                 <p className="text-sm text-gray-500" style={MR}>{article.originalTitle}</p>
               </div>
             )}
+
+            {/* Rich Text Editor */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2" style={MR}>
+                Content *
+              </label>
+
+              {/* Toolbar */}
+              <div style={{
+                display: "flex", flexWrap: "wrap", gap: "6px",
+                padding: "10px 12px",
+                background: "#f9fafb",
+                border: "1px solid #e5e7eb",
+                borderBottom: "none",
+                borderRadius: "12px 12px 0 0",
+              }}>
+                <ToolbarBtn onClick={() => exec("bold")}                  label="B"        title="Bold" />
+                <ToolbarBtn onClick={() => exec("italic")}               label="I"        title="Italic" />
+                <ToolbarBtn onClick={() => exec("underline")}            label="U"        title="Underline" />
+                <div style={{ width:"1px", background:"#e5e7eb", margin:"0 2px" }} />
+                <ToolbarBtn onClick={() => exec("formatBlock","h2")}     label="H2"       title="Heading 2" />
+                <ToolbarBtn onClick={() => exec("formatBlock","h3")}     label="H3"       title="Heading 3" />
+                <ToolbarBtn onClick={() => exec("formatBlock","p")}      label="¶"        title="Paragraph" />
+                <div style={{ width:"1px", background:"#e5e7eb", margin:"0 2px" }} />
+                <ToolbarBtn onClick={() => exec("insertUnorderedList")}  label="• List"   title="Bullet List" />
+                <ToolbarBtn onClick={() => exec("insertOrderedList")}    label="1. List"  title="Numbered List" />
+                <div style={{ width:"1px", background:"#e5e7eb", margin:"0 2px" }} />
+                <ToolbarBtn onClick={() => exec("removeFormat")}         label="Clear"    title="Clear Formatting" />
+              </div>
+
+              {/* Editor */}
+              <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                data-placeholder="येथे बातमीचा मजकूर लिहा..."
+                style={{
+                  minHeight: "300px",
+                  padding: "16px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0 0 12px 12px",
+                  outline: "none",
+                  ...MR,
+                  fontSize: "15px",
+                  lineHeight: "1.85",
+                  color: "#1f2937",
+                  background: "#fff",
+                }}
+              />
+
+              <style>{`
+                [contenteditable]:empty:before { content: attr(data-placeholder); color: #9ca3af; pointer-events: none; }
+                [contenteditable] h2 { font-size: 1.4rem; font-weight: 800; margin: 1rem 0 0.5rem; }
+                [contenteditable] h3 { font-size: 1.2rem; font-weight: 700; margin: 0.75rem 0 0.4rem; }
+                [contenteditable] p  { margin-bottom: 0.75rem; }
+                [contenteditable] ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+                [contenteditable] ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+                [contenteditable] b, [contenteditable] strong { font-weight: 800; }
+              `}</style>
+            </div>
           </div>
         )}
 
@@ -239,50 +319,38 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
                 onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
               <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
                 className="px-4 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 disabled:opacity-50">
-                {uploading ? "⏳ Uploading..." : "📁 Image Upload करा"}
+                {uploading ? "⏳ Uploading..." : "📁 Upload करा"}
               </button>
               <input type="url" placeholder="किंवा image URL paste करा..."
                 className="flex-1 min-w-48 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
-                onBlur={e => { if (e.target.value.startsWith("http")) { setImageUrl(e.target.value); e.target.value = ""; } }}
-                onKeyDown={e => { if (e.key === "Enter") { const v = (e.target as HTMLInputElement).value; if (v.startsWith("http")) { setImageUrl(v); (e.target as HTMLInputElement).value = ""; } } }}
+                onBlur={e => { if (e.target.value.startsWith("http")) { setImageUrl(e.target.value); e.target.value=""; } }}
+                onKeyDown={e => { if (e.key==="Enter") { const v=(e.target as HTMLInputElement).value; if(v.startsWith("http")){setImageUrl(v);(e.target as HTMLInputElement).value="";} } }}
               />
             </div>
           </div>
         )}
 
         {/* ── SHORTS TAB ── */}
-        {activeTab === "seo" && (
+        {activeTab === "shorts" && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5" style={MR}>
                 ⚡ Short News (Shorts साठी — ६० शब्दांत)
               </label>
-              <textarea
-                rows={5}
-                value={shortNews}
-                onChange={e => setShortNews(e.target.value)}
-                placeholder="६० शब्दांत किंवा कमी शब्दांत संपूर्ण बातमी. WHO, WHAT, WHERE, WHEN सर्व cover करा..."
-                className={`${inputCls} resize-none`}
-                style={MR}
-              />
+              <textarea rows={5} value={shortNews} onChange={e => setShortNews(e.target.value)}
+                placeholder="६० शब्दांत किंवा कमी शब्दांत संपूर्ण बातमी..."
+                className={`${inputCls} resize-none`} style={MR} />
               <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-gray-400">Shorts page वर हा मजकूर दिसतो</p>
+                <p className="text-xs text-gray-400" style={MR}>Shorts page वर हा मजकूर दिसतो</p>
                 <span className={`text-xs font-medium ${shortNews.split(/\s+/).filter(Boolean).length > 60 ? "text-red-500" : "text-green-600"}`}>
                   {shortNews.split(/\s+/).filter(Boolean).length} / 60 शब्द
                 </span>
               </div>
             </div>
-            <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
-              <p className="text-xs font-semibold text-orange-700 mb-1" style={MR}>💡 Tip</p>
-              <p className="text-xs text-orange-600" style={MR}>
-                Scraper आपोआप ६० शब्दांचा सारांश तयार करतो. हा field खाली असेल तर Excerpt वापरला जातो.
-              </p>
-            </div>
           </div>
         )}
       </div>
 
-      {/* Action buttons */}
       {/* WhatsApp Share */}
       {article && (
         <div className="mt-4">
@@ -290,12 +358,13 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
             articleId={article.id}
             title={title}
             excerpt={excerpt}
-            content={content}
+            content={editorRef.current?.innerHTML || article.content || ""}
             slug={article.slug}
           />
         </div>
       )}
 
+      {/* Action buttons */}
       <div className="flex gap-3 mt-4">
         <button onClick={handleSave} disabled={saving}
           className="flex-1 py-3.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 text-base"

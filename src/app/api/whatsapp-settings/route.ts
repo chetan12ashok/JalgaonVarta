@@ -1,4 +1,3 @@
-// src/app/api/whatsapp-settings/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -19,7 +18,7 @@ const db  = getFirestore(app);
 export async function GET() {
   try {
     const snap = await getDoc(doc(db, "settings", "whatsapp"));
-    if (!snap.exists()) return NextResponse.json({ groupLink: "" });
+    if (!snap.exists()) return NextResponse.json({ groupLink: "", siteUrl: "https://viralkatta.com" });
     return NextResponse.json(snap.data());
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -30,9 +29,10 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { groupLink } = await req.json();
+    const { groupLink, siteUrl } = await req.json();
     await setDoc(doc(db, "settings", "whatsapp"), {
       groupLink: groupLink || "",
+      siteUrl:   siteUrl   || "https://viralkatta.com",
       updatedAt: new Date().toISOString(),
     });
     return NextResponse.json({ success: true });

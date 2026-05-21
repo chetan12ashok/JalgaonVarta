@@ -237,3 +237,14 @@ body {
 @media(min-width: 1024px) {
   .grid-main { grid-template-columns: 3fr 1fr; }
 }
+
+/* ── Admin panel font ──────────────────────────────── */
+.admin-root,
+.admin-root *,
+.admin-root input,
+.admin-root textarea,
+.admin-root select,
+.admin-root button,
+.admin-root label {
+  font-family: 'Noto Sans Devanagari', 'Mukta', system-ui, sans-serif !important;
+}

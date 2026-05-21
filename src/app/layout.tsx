@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const siteUrl = process.env.NEXTAUTH_URL || "https://viralkatta.com";
+
 export const metadata: Metadata = {
-  title: { default: "ViralKatta | जळगाव बातम्या", template: "%s | ViralKatta" },
-  description: "जळगावच्या सर्व ताज्या बातम्या एकाच ठिकाणी. ViralKatta — आपला विश्वासू मराठी न्यूज पोर्टल.",
-  keywords: ["जळगाव", "मराठी बातम्या", "जळगाव न्यूज", "ViralKatta", "Jalgaon News"],
+  metadataBase: new URL(siteUrl),
+  title: { default: "JalgaonVarta | जळगावची वार्ता|JalgaonVarta | जळगावची वार्ता", template: "%s | ViralKatta" },
+  description: "जळगावच्या सर्व ताज्या बातम्या एकाच ठिकाणी. JalgaonVarta | जळगावची वार्ता— आपला विश्वासू मराठी न्यूज पोर्टल.",
+  keywords: ["जळगाव", "मराठी बातम्या", "जळगाव न्यूज", "JalgaonVarta", "Jalgaon News"],
+  openGraph: {
+    siteName: "ViralKatta",
+    locale:   "mr_IN",
+    type:     "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

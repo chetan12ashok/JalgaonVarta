@@ -1,3 +1,8 @@
+// functions/index.js — ViralKatta Firebase Scheduled Scraper
+const { onSchedule }     = require("firebase-functions/v2/scheduler");
+const { setGlobalOptions } = require("firebase-functions/v2");
+setGlobalOptions({ region: "us-east4" });
+
 // scraper/index.js — ViralKatta Full Pipeline
 // Fetch → Perplexity Rewrite → ChatGPT Thumbnail Prompt → gpt-image-2 → Firebase Storage → Firestore
 
@@ -10,7 +15,6 @@ const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/stora
 const axios  = require("axios");
 const cheerio = require("cheerio");
 const xml2js  = require("xml2js");
-const cron    = require("node-cron");
 
 // ── Config ────────────────────────────────────────────────────────────────
 const PERPLEXITY_API_KEY = "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";
@@ -460,7 +464,7 @@ async function generateImageIdentityPreserved(imagePrompt, originalImageUrl) {
   const FormData = require("form-data");
   const form = new FormData();
   form.append("model",  "gpt-image-2");
-  form.append("prompt", imagePrompt);
+  form.append("prompt", imagePrompt+" Most important dont use the layout or dont copy the format of attached image only take the photo from the attached image the layout of thumnail shoude not be copy");
   form.append("n",      "1");
   form.append("size",   "1536x1024");
   // Attach original image as reference (must be PNG for edits endpoint)
@@ -594,7 +598,7 @@ async function fetchRSS(source) {
   const res    = await axios.get(source.url, { timeout: 15000 });
   const parsed = await xml2js.parseStringPromise(res.data);
   const items  = parsed.rss?.channel?.[0]?.item || [];
-  return items.slice(0, 1).map((item) =>({
+  return items.slice(0, 1).map((item) => ({
     originalTitle:   item.title?.[0]       || "",
     originalContent: item.description?.[0] || item["content:encoded"]?.[0] || "",
     sourceUrl:       item.link?.[0]        || "",
@@ -605,7 +609,7 @@ async function fetchScraper(source) {
   const res = await axios.get(source.url, { timeout: 15000, headers: { "User-Agent": "Mozilla/5.0" } });
   const $   = cheerio.load(res.data);
   const out = [];
-  $("article, .post, .news-item").slice(0, 5).each((_, el) => {
+  $("article, .post, .news-item").slice(0, 1).each((_, el) => {
     const title   = $(el).find("h2, h3, .title").first().text().trim();
     const excerpt = $(el).find("p, .excerpt").first().text().trim();
     const link    = $(el).find("a").first().attr("href") || "";
@@ -747,10 +751,13 @@ async function runScraper() {
   console.log("─".repeat(60));
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────
-console.log("🔶 ViralKatta Scraper — Full AI Pipeline");
-console.log("   Perplexity Rewrite → Thumbnail Prompt → DALL-E 3 → Storage → Firestore");
-console.log("📅 Runs every 10 minutes\n");
-
-runScraper().catch(console.error);
-cron.schedule("*/10 * * * *", () => runScraper().catch(console.error));
+// ── Firebase Scheduled Function — every 10 minutes ─────────────────────────
+exports.viralkattaScraper = onSchedule({
+  schedule:        "every 10 minutes",
+  timeoutSeconds:  540,
+  memory:          "1GiB",
+}, async () => {
+  console.log("🚀 ViralKatta Firebase Scraper triggered");
+  await runScraper();
+  console.log("✅ Scraper completed");
+});

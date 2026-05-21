@@ -115,13 +115,13 @@ export default function ShortsClient({ shorts }: { shorts: Short[] }) {
             <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
               <div style={{
                 width: 58, height: 58, borderRadius: 18,
-                background: "linear-gradient(135deg,#FF5A1F,#E8420A)",
+                background: "linear-gradient(135deg,#1B2D6B,#142259)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "#fff", fontWeight: 900, fontSize: 24,
                 boxShadow: "0 10px 24px rgba(232,66,10,0.35)",
-              }}>VK</div>
+              }}>JV</div>
               <div>
-                <div style={{ color:"#fff", fontWeight:900, fontSize:18, lineHeight:1 }}>ViralKatta</div>
+                <div style={{ color:"#fff", fontWeight:900, fontSize:18, lineHeight:1 }}>JalgaonVarta</div>
                 <div style={{ color:"rgba(255,255,255,0.6)", fontSize:12, marginTop:4, fontFamily:MR }}>Shorts</div>
               </div>
             </Link>

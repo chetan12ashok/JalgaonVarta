@@ -96,18 +96,15 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-md group-hover:scale-105 transition-transform"
-            style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-dark))", fontFamily: "'Baloo 2', sans-serif" }}
-          >
-            VK
-          </div>
+         <div className="w-11 h-11 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
+          <img src="/logo.png" alt="JalgaonVarta" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        </div>
           <div>
-            <div className="font-black text-2xl leading-none" style={{ color: "var(--brand)", fontFamily: "'Baloo 2', sans-serif" }}>
-              ViralKatta
+            <div className="font-black text-2xl leading-none" style={{ color: "#1B2D6B", fontFamily: "'Baloo 2', sans-serif" }}>
+              JalgaonVarta
             </div>
             <div className="text-xs mt-0.5" style={{ color: "var(--text-light)", fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-              जळगावचा आवाज
+              जळगावची वार्ता
             </div>
           </div>
         </Link>
