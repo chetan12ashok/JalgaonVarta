@@ -1,0 +1,81 @@
+// prisma/schema.prisma — SQLite compatible (no enums)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./viralkatta.db"
+}
+
+model Article {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  content       String
+  excerpt       String
+  imageUrl      String?
+  status        String    @default("PENDING")
+  originalTitle String?
+  sourceUrl     String?
+  views         Int       @default(0)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  source   Source? @relation(fields: [sourceId], references: [id])
+  sourceId String?
+
+  tags ArticleTag[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  color       String    @default("#FF6B00")
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+}
+
+model Source {
+  id           String    @id @default(cuid())
+  name         String
+  type         String
+  url          String
+  active       Boolean   @default(true)
+  lastFetched  DateTime?
+  articleCount Int       @default(0)
+  articles     Article[]
+  createdAt    DateTime  @default(now())
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  slug     String       @unique
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@id([articleId, tagId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
