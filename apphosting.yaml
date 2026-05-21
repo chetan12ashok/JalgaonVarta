@@ -1,0 +1,15 @@
+runConfig:
+  runtime: nodejs20
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 5
+
+env:
+  - variable: NODE_ENV
+    value: production
+  - variable: NEXTAUTH_URL
+    value: https://virralkatta.web.app
+  - variable: NEXTAUTH_SECRET
+    value: viralkatta-super-secret-key-2024-virralkatta
