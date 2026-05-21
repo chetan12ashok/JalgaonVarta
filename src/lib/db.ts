@@ -47,6 +47,11 @@ export interface Article {
   sourceName:    string | null;
   category:      { id: string; name: string; slug: string; color: string };
   source?:       { name: string } | null;
+  tags?:         string[];
+  shortContent?: string | null;
+  shortNews?:    string | null;
+  whatsappMessage?: string | null;
+  [key: string]: any;
 }
 
 export interface Category {
