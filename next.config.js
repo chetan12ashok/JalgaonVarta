@@ -7,8 +7,7 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  // Suppress hydration warnings in dev
   reactStrictMode: false,
+  // v2
 };
-
 module.exports = nextConfig;
