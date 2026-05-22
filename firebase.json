@@ -3,6 +3,9 @@
     {
       "source": "functions",
       "codebase": "default",
+      "predeploy": [
+        "cp .env functions/.env"
+      ],
       "disallowLegacyRuntimeConfig": true,
       "ignore": [
         "node_modules",

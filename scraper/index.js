@@ -11,10 +11,11 @@ const axios  = require("axios");
 const cheerio = require("cheerio");
 const xml2js  = require("xml2js");
 const cron    = require("node-cron");
+require("dotenv").config();
 
 // ── Config ────────────────────────────────────────────────────────────────
-const PERPLEXITY_API_KEY = "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";
-const OPENAI_API_KEY     = "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"; // ← paste your OpenAI key
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+const OPENAI_API_KEY     = process.env.OPENAI_API_KEY;
 
 
 const firebaseConfig = {

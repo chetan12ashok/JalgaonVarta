@@ -13,3 +13,7 @@ env:
     value: https://virralkatta.web.app
   - variable: NEXTAUTH_SECRET
     value: viralkatta-super-secret-key-2024-virralkatta
+  - variable: OPENAI_API_KEY
+    secret: OPENAI_API_KEY
+  - variable: PERPLEXITY_API_KEY
+    secret: PERPLEXITY_API_KEY

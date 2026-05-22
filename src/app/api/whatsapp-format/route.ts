@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const firebaseConfig = {
   apiKey: "AIzaSyACapSCl0G6uALstmD7TfADDCNTSnQ_acE",
