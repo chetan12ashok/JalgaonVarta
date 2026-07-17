@@ -33,7 +33,7 @@ export default async function HomePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '18px' }}>⚡</span>
             <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", color: '#fff', fontSize: '13px', fontWeight: 700 }}>
-              JalgaonVarta Shorts — ६० शब्दांत बातमी
+              ViralKatta Shorts — ६० शब्दांत बातमी
             </span>
           </div>
           <Link href="/shorts" style={{

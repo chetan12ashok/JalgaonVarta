@@ -35,8 +35,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center shadow-2xl mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">VK</span>
+          <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-2xl mx-auto mb-4 overflow-hidden">
+            <img src="/viral-katta-square.png" alt="ViralKatta" className="w-full h-full object-contain" />
           </div>
           <h1 className="font-bold text-3xl text-white tracking-tight">ViralKatta</h1>
           <p className="text-gray-400 text-sm mt-1">Admin Panel</p>

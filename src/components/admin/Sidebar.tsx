@@ -21,11 +21,11 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-5 border-b border-gray-800">
         <Link href="/" target="_blank" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="font-bold text-lg font-display">JV</span>
+          <div className="w-11 h-11 bg-white rounded-xl overflow-hidden shadow-lg flex items-center justify-center">
+            <img src="/viral-katta-square.png" alt="ViralKatta" className="w-full h-full object-contain" />
           </div>
           <div>
-            <div className="font-display font-bold text-lg text-orange-400 leading-none">JalgaonVarta</div>
+            <div className="font-display font-bold text-lg text-orange-400 leading-none">ViralKatta</div>
             <div className="text-xs text-gray-500">Admin Panel</div>
           </div>
         </Link>

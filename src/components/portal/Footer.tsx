@@ -14,14 +14,10 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center font-black text-white text-xl"
-                style={{ background: "linear-gradient(135deg, #1B2D6B, #142259)", fontFamily: "'Baloo 2', sans-serif" }}
-              >JV</div>
-              <span className="font-black text-2xl text-orange-400" style={{ fontFamily: "'Baloo 2', sans-serif" }}>JalgaonVarta</span>
+              <img src="/viral-katta-landscape.png" alt="ViralKatta" style={{ width: 210, height: 72, objectFit: "contain", objectPosition: "left center" }} />
             </div>
             <p className="text-sm leading-relaxed text-gray-400">
-              जळगावच्या ताज्या बातम्या सर्वात आधी. JalgaonVarta हे जळगाव जिल्ह्यातील विश्वासार्ह मराठी न्यूज पोर्टल आहे.
+              जळगावच्या ताज्या बातम्या सर्वात आधी. ViralKatta हे जळगाव जिल्ह्यातील विश्वासार्ह मराठी न्यूज पोर्टल आहे.
             </p>
           </div>
 
@@ -51,7 +47,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 pt-5 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-500">
-          <span>© 2025 JalgaonVarta. सर्व हक्क राखीव.</span>
+          <span>© 2026 ViralKatta. सर्व हक्क राखीव.</span>
           <span>Made with ❤️ for Jalgaon</span>
         </div>
       </div>
