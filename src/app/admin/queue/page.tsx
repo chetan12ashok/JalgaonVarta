@@ -23,6 +23,11 @@ interface Article {
 
 interface Category { id: string; name: string; }
 
+function formatKb(bytes?: number) {
+  if (!bytes) return "";
+  return `${Math.round(bytes / 1024)}KB`;
+}
+
 export default function QueuePage() {
   const [articles,      setArticles]      = useState<Article[]>([]);
   const [categories,    setCategories]    = useState<Category[]>([]);
@@ -85,7 +90,9 @@ export default function QueuePage() {
       const data = await res.json();
       if (data.url) {
         setEditImage(data.url);
-        showToast("✅ Image upload झाले!");
+        const optimized = formatKb(data.optimizedSize);
+        const original = formatKb(data.originalSize);
+        showToast(optimized ? `✅ Image optimized: ${original} → ${optimized}` : "✅ Image upload झाले!");
       } else throw new Error(data.error || "Upload failed");
     } catch (err: any) {
       showToast("Image upload failed: " + err.message, "error");

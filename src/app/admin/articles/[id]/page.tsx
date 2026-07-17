@@ -17,6 +17,11 @@ interface Article {
 
 const MR = { fontFamily: "'Noto Sans Devanagari','Mukta',sans-serif" };
 
+function formatKb(bytes?: number) {
+  if (!bytes) return "";
+  return `${Math.round(bytes / 1024)}KB`;
+}
+
 export default function EditArticlePage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [article,    setArticle]    = useState<Article | null>(null);
@@ -119,7 +124,12 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
       formData.append("file", file);
       const res  = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
-      if (data.url) { setImageUrl(data.url); showToast("✅ Image upload झाले!"); }
+      if (data.url) {
+        setImageUrl(data.url);
+        const optimized = formatKb(data.optimizedSize);
+        const original = formatKb(data.originalSize);
+        showToast(optimized ? `✅ Image optimized: ${original} → ${optimized}` : "✅ Image upload झाले!");
+      }
       else throw new Error(data.error || "Upload failed");
     } catch (err: any) { showToast("Upload failed: " + err.message, "error"); }
     setUploading(false);
