@@ -15,6 +15,10 @@ interface Article {
   categoryName:  string;
   categoryColor: string;
   sourceName?:   string | null;
+  thumbnailPrompt?: string | null;
+  thumbnailMode?: string | null;
+  thumbnailRequiresReference?: boolean;
+  originalImageUrl?: string | null;
 }
 
 interface Category { id: string; name: string; }
@@ -93,7 +97,25 @@ export default function QueuePage() {
     if (url.startsWith("http")) setEditImage(url);
   }
 
+  async function copyThumbnailPrompt(prompt: string) {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      showToast("✅ Thumbnail prompt copy झाला!");
+    } catch {
+      showToast("Prompt copy failed", "error");
+    }
+  }
+
   async function handleAction(id: string, status: "PUBLISHED" | "REJECTED") {
+    const currentArticle = selected?.id === id ? selected : articles.find((article) => article.id === id);
+    const nextImageUrl = selected?.id === id ? editImage : currentArticle?.imageUrl;
+
+    if (status === "PUBLISHED" && !nextImageUrl) {
+      showToast("Publish करण्यापूर्वी thumbnail upload करणे आवश्यक आहे", "error");
+      if (currentArticle) openArticle(currentArticle);
+      return;
+    }
+
     setProcessing(id);
     try {
       const body: any = { status };
@@ -109,11 +131,14 @@ export default function QueuePage() {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(body),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Action failed");
+      }
       showToast(status === "PUBLISHED" ? "✅ बातमी publish झाली!" : "❌ बातमी reject झाली");
       setSelected(null);
       await loadQueue();
-    } catch { showToast("Action failed", "error"); }
+    } catch (err: any) { showToast(err.message || "Action failed", "error"); }
     setProcessing(null);
   }
 
@@ -223,6 +248,76 @@ export default function QueuePage() {
                   />
                 </div>
               </div>
+
+              <div className="mt-4 rounded-xl border border-orange-100 bg-orange-50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <div>
+                    <p className="text-sm font-bold text-orange-900">Manual Thumbnail Prompt</p>
+                    <p className="text-xs text-orange-700 mt-0.5">
+                      हा prompt वापरून thumbnail manually generate करा आणि मग upload करा.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-white text-xs font-semibold text-orange-700 border border-orange-200">
+                      {selected.thumbnailMode || "PROMPT_ONLY"}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                      selected.thumbnailRequiresReference || selected.thumbnailMode === "IDENTITY_PRESERVED"
+                        ? "bg-red-50 text-red-700 border-red-200"
+                        : "bg-green-50 text-green-700 border-green-200"
+                    }`}>
+                      {selected.thumbnailRequiresReference || selected.thumbnailMode === "IDENTITY_PRESERVED"
+                        ? "Existing/source thumbnail reference required"
+                        : "Existing thumbnail reference not required"}
+                    </span>
+                    {selected.thumbnailPrompt && (
+                      <button
+                        onClick={() => copyThumbnailPrompt(selected.thumbnailPrompt || "")}
+                        className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700"
+                      >
+                        Copy Prompt
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {selected.originalImageUrl && (
+                  <div className="mb-3 rounded-lg bg-white border border-orange-100 p-3">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Source thumbnail reference available</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <a href={selected.originalImageUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-xs text-orange-700 underline">
+                        Open source thumbnail
+                      </a>
+                      <button
+                        onClick={() => setEditImage(selected.originalImageUrl || null)}
+                        className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                      >
+                        Use source thumbnail URL
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {selected.thumbnailPrompt ? (
+                  <textarea
+                    readOnly
+                    value={selected.thumbnailPrompt}
+                    rows={7}
+                    className="w-full rounded-lg border border-orange-100 bg-white p-3 text-xs leading-5 text-gray-800 focus:outline-none"
+                  />
+                ) : (
+                  <p className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3">
+                    Prompt अजून generate झालेला नाही. Thumbnail manually upload करून publish करू शकता.
+                  </p>
+                )}
+
+                {!editImage && (
+                  <p className="mt-3 text-xs font-semibold text-red-600">
+                    Publish करण्यासाठी thumbnail upload/paste करणे required आहे.
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Original title reference */}
@@ -312,6 +407,16 @@ export default function QueuePage() {
                     {article.sourceName && (
                       <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                         {article.sourceName}
+                      </span>
+                    )}
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      article.imageUrl ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+                    }`}>
+                      {article.imageUrl ? "Thumbnail ready" : "Thumbnail required"}
+                    </span>
+                    {article.thumbnailMode && (
+                      <span className="text-xs text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full">
+                        {article.thumbnailMode}
                       </span>
                     )}
                     <span className="text-xs text-gray-400 ml-auto">

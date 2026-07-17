@@ -8,6 +8,8 @@ interface Category { id: string; name: string; }
 interface Article {
   id: string; title: string; excerpt: string; content: string;
   shortContent?: string | null; imageUrl: string | null;
+  thumbnailPrompt?: string | null; thumbnailMode?: string | null;
+  thumbnailRequiresReference?: boolean; originalImageUrl?: string | null;
   status: string; categoryId: string; categoryName: string;
   categoryColor: string; originalTitle: string | null;
   sourceUrl: string | null; views: number; slug: string;
@@ -74,6 +76,11 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
       showToast("Title, Excerpt आणि Content आवश्यक आहे", "error");
       return;
     }
+    if (status === "PUBLISHED" && !imageUrl) {
+      showToast("Publish करण्यापूर्वी thumbnail upload करणे आवश्यक आहे", "error");
+      setActiveTab("media");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch(`/api/articles/${params.id}`, {
@@ -85,7 +92,10 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
           categoryId, status, imageUrl,
         }),
       });
-      if (!res.ok) throw new Error("Save failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Save failed");
+      }
       showToast("✅ बातमी अपडेट झाली!");
       setTimeout(() => router.push("/admin/articles"), 1200);
     } catch (err: any) {
@@ -112,6 +122,15 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
       else throw new Error(data.error || "Upload failed");
     } catch (err: any) { showToast("Upload failed: " + err.message, "error"); }
     setUploading(false);
+  }
+
+  async function copyThumbnailPrompt(prompt: string) {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      showToast("✅ Thumbnail prompt copy झाला!");
+    } catch {
+      showToast("Prompt copy failed", "error");
+    }
   }
 
   const ToolbarBtn = ({ onClick, label, title }: { onClick: () => void; label: string; title: string }) => (
@@ -326,6 +345,76 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
                 onBlur={e => { if (e.target.value.startsWith("http")) { setImageUrl(e.target.value); e.target.value=""; } }}
                 onKeyDown={e => { if (e.key==="Enter") { const v=(e.target as HTMLInputElement).value; if(v.startsWith("http")){setImageUrl(v);(e.target as HTMLInputElement).value="";} } }}
               />
+            </div>
+
+            <div className="rounded-xl border border-orange-100 bg-orange-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div>
+                  <p className="text-sm font-bold text-orange-900">Manual Thumbnail Prompt</p>
+                  <p className="text-xs text-orange-700 mt-0.5" style={MR}>
+                    हा prompt वापरून thumbnail manually generate करा आणि मग upload करा.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2.5 py-1 rounded-full bg-white text-xs font-semibold text-orange-700 border border-orange-200">
+                    {article.thumbnailMode || "PROMPT_ONLY"}
+                  </span>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                    article.thumbnailRequiresReference || article.thumbnailMode === "IDENTITY_PRESERVED"
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : "bg-green-50 text-green-700 border-green-200"
+                  }`}>
+                    {article.thumbnailRequiresReference || article.thumbnailMode === "IDENTITY_PRESERVED"
+                      ? "Existing/source thumbnail reference required"
+                      : "Existing thumbnail reference not required"}
+                  </span>
+                  {article.thumbnailPrompt && (
+                    <button
+                      onClick={() => copyThumbnailPrompt(article.thumbnailPrompt || "")}
+                      className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700"
+                    >
+                      Copy Prompt
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {article.originalImageUrl && (
+                <div className="mb-3 rounded-lg bg-white border border-orange-100 p-3">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">Source thumbnail reference available</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a href={article.originalImageUrl} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-orange-700 underline">
+                      Open source thumbnail
+                    </a>
+                    <button
+                      onClick={() => setImageUrl(article.originalImageUrl || null)}
+                      className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                    >
+                      Use source thumbnail URL
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {article.thumbnailPrompt ? (
+                <textarea
+                  readOnly
+                  value={article.thumbnailPrompt}
+                  rows={7}
+                  className="w-full rounded-lg border border-orange-100 bg-white p-3 text-xs leading-5 text-gray-800 focus:outline-none"
+                />
+              ) : (
+                <p className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3" style={MR}>
+                  Prompt अजून generate झालेला नाही. Thumbnail manually upload करून publish करू शकता.
+                </p>
+              )}
+
+              {!imageUrl && (
+                <p className="mt-3 text-xs font-semibold text-red-600" style={MR}>
+                  Publish करण्यासाठी thumbnail upload/paste करणे required आहे.
+                </p>
+              )}
             </div>
           </div>
         )}

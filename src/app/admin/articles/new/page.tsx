@@ -46,6 +46,10 @@ export default function NewArticlePage() {
       showToast("Title, Excerpt, Content आणि Category आवश्यक आहे", "error");
       return;
     }
+    if (status === "PUBLISHED" && !imageUrl.trim()) {
+      showToast("Publish करण्यापूर्वी thumbnail URL आवश्यक आहे", "error");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/articles", {
@@ -53,7 +57,10 @@ export default function NewArticlePage() {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ title, excerpt, content, categoryId, imageUrl: imageUrl || null, status }),
       });
-      if (!res.ok) throw new Error("Save failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Save failed");
+      }
       showToast("✅ बातमी सेव्ह झाली!");
       setTimeout(() => router.push("/admin/articles"), 1200);
     } catch (err: any) {

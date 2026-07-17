@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
 
   if (!title || !content || !excerpt || !categoryId)
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  if (status === "PUBLISHED" && !imageUrl)
+    return NextResponse.json({ error: "Thumbnail image is required before publishing" }, { status: 400 });
 
   const article = await createArticle({
     title, content, excerpt, imageUrl, categoryId, sourceId, sourceUrl, originalTitle, status,

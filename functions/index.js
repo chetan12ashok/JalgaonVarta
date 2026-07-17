@@ -5,7 +5,7 @@ const { setGlobalOptions } = require("firebase-functions/v2");
 setGlobalOptions({ region: "us-east4" });
 
 // scraper/index.js — ViralKatta Full Pipeline
-// Fetch → Perplexity Rewrite → ChatGPT Thumbnail Prompt → gpt-image-2 → Firebase Storage → Firestore
+// Fetch → Perplexity Rewrite → ChatGPT Thumbnail Prompt → Firestore
 
 const { initializeApp, getApps } = require("firebase/app");
 const {
@@ -772,42 +772,18 @@ async function processArticle(raw, source) {
     raw.originalImageUrl || null,
   );
 
-  // Step 3: Generate image with gpt-image-2 (mode-aware)
-  let imageUrl = null;
-  if (thumbnailResult && OPENAI_API_KEY !== "YOUR_OPENAI_API_KEY_HERE") {
-    const { mode, prompt: thumbnailPrompt } = thumbnailResult;
-    console.log(`  🎯 Thumbnail mode: ${mode}`);
-
-    const imageData = await generateThumbnailImage(
-      mode,
-      thumbnailPrompt,
-      raw.originalImageUrl || null,   // passed to edits API if IDENTITY_PRESERVED
-    );
-
-    if (imageData) {
-      // Step 4: Upload to Firebase Storage
-      const thumbSlug = rewritten.englishSlug ? buildEnglishSlug(rewritten.englishSlug) : makeSlug(rewritten.title);
-      imageUrl = await uploadToFirebaseStorage(imageData, thumbSlug);
-    }
-  } else if (OPENAI_API_KEY === "YOUR_OPENAI_API_KEY_HERE") {
-    console.log("  ⚠️  OpenAI key not set — skipping image generation");
-  }
-
-  // Fallback: use original thumbnail from source site if AI image failed/skipped
-  if (!imageUrl && raw.originalImageUrl) {
-    imageUrl = raw.originalImageUrl;
-    console.log(`  🖼️  Using original source thumbnail: ${imageUrl}`);
-  }
-
-  // Extract thumbnailPrompt string for Firestore (may be null if thumbnailResult is null)
+  // Step 3: Save the prompt for manual thumbnail creation in the admin panel.
   const thumbnailPrompt = thumbnailResult?.prompt || null;
   const thumbnailMode   = thumbnailResult?.mode   || null;
+  const thumbnailRequiresReference = thumbnailMode === "IDENTITY_PRESERVED";
+  if (thumbnailMode) console.log(`  🎯 Thumbnail mode: ${thumbnailMode}`);
+  console.log("  🖼️  Manual thumbnail flow enabled — image generation skipped");
 
-  // Step 5: Detect category
+  // Step 4: Detect category
   const cat = await detectCategory(rewritten.title);
   if (!cat) { console.log("  ⚠️  No category found"); return false; }
 
-  // Step 6: Save to Firestore
+  // Step 5: Save to Firestore
   const now  = Timestamp.now();
   const slug = rewritten.englishSlug ? buildEnglishSlug(rewritten.englishSlug) : makeSlug(rewritten.title);
   const articlePayload = {
@@ -815,9 +791,10 @@ async function processArticle(raw, source) {
     slug,
     excerpt:         rewritten.excerpt,
     content:         rewritten.content,
-    imageUrl:         imageUrl || null,
+    imageUrl:         null,
     thumbnailPrompt:  thumbnailPrompt || null,
     thumbnailMode:    thumbnailMode    || null,        // FULL_GENERATION or IDENTITY_PRESERVED
+    thumbnailRequiresReference,
     originalImageUrl: raw.originalImageUrl || null,   // original thumbnail from source site
     status:           "PENDING",
     originalTitle:    raw.originalTitle,
@@ -844,7 +821,7 @@ async function processArticle(raw, source) {
   });
 
   console.log(`  ✅ Saved: ${rewritten.title.substring(0, 50)}`);
-  console.log(`  🖼️  Image: ${imageUrl ? "✅ Saved to Storage" : "❌ None"}`);
+  console.log("  🖼️  Image: manual upload required before publish");
   return { id: articleRef.id, ...articlePayload };
 }
 
@@ -884,7 +861,7 @@ async function runScraper() {
       const savedArticle = await processArticle(raw, source);
       if (savedArticle) newArticles.push(savedArticle);
 
-      // Rate limit — 3s between articles (DALL-E is slow)
+      // Rate limit between articles
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
@@ -934,6 +911,17 @@ exports.telegramWebhook = onRequest({
     const article = snap.data();
     const chatId = callback?.message?.chat?.id;
     const messageId = callback?.message?.message_id;
+
+    if (!article.imageUrl) {
+      await sendTelegramMessage(
+        callback?.message?.chat?.id,
+        "Thumbnail upload required before approval. Please open the admin queue, use the saved prompt to generate the thumbnail manually, upload it, then approve.",
+        callback?.message?.message_id,
+      );
+      await answerTelegramCallback(callbackQueryId, "Thumbnail required before approval");
+      res.status(200).send("thumbnail required");
+      return;
+    }
 
     await answerTelegramCallback(callbackQueryId, "Approving and generating WhatsApp message...");
 

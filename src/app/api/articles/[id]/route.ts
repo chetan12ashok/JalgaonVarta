@@ -17,6 +17,13 @@ export async function PATCH(req: NextRequest, { params }: Props) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
+  if (body.status === "PUBLISHED") {
+    const existing = await getArticleById(params.id);
+    const nextImageUrl = Object.prototype.hasOwnProperty.call(body, "imageUrl") ? body.imageUrl : existing?.imageUrl;
+    if (!nextImageUrl) {
+      return NextResponse.json({ error: "Thumbnail image is required before publishing" }, { status: 400 });
+    }
+  }
   await updateArticle(params.id, body);
   const updated = await getArticleById(params.id);
   return NextResponse.json(updated);
