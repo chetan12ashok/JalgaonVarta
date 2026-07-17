@@ -24,6 +24,7 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
   const [loading,    setLoading]    = useState(true);
   const [saving,     setSaving]     = useState(false);
   const [uploading,  setUploading]  = useState(false);
+  const [prompting,  setPrompting]  = useState(false);
   const [activeTab,  setActiveTab]  = useState<"content"|"media"|"shorts">("content");
   const [toast,      setToast]      = useState<{msg:string;type:"success"|"error"}|null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -131,6 +132,26 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
     } catch {
       showToast("Prompt copy failed", "error");
     }
+  }
+
+  async function generateThumbnailPrompt() {
+    if (!article) return;
+    setPrompting(true);
+    try {
+      const res = await fetch(`/api/articles/${article.id}/thumbnail-prompt`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Prompt generation failed");
+      setArticle({
+        ...article,
+        thumbnailPrompt: data.thumbnailPrompt,
+        thumbnailMode: data.thumbnailMode,
+        thumbnailRequiresReference: data.thumbnailRequiresReference,
+      });
+      showToast("✅ Thumbnail prompt generate झाला!");
+    } catch (err: any) {
+      showToast(err.message || "Prompt generation failed", "error");
+    }
+    setPrompting(false);
   }
 
   const ToolbarBtn = ({ onClick, label, title }: { onClick: () => void; label: string; title: string }) => (
@@ -368,12 +389,20 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
                       ? "Existing/source thumbnail reference required"
                       : "Existing thumbnail reference not required"}
                   </span>
-                  {article.thumbnailPrompt && (
+                  {article.thumbnailPrompt ? (
                     <button
                       onClick={() => copyThumbnailPrompt(article.thumbnailPrompt || "")}
                       className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700"
                     >
                       Copy Prompt
+                    </button>
+                  ) : (
+                    <button
+                      onClick={generateThumbnailPrompt}
+                      disabled={prompting}
+                      className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700 disabled:opacity-50"
+                    >
+                      {prompting ? "Generating..." : "Generate Prompt"}
                     </button>
                   )}
                 </div>
@@ -405,9 +434,16 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
                   className="w-full rounded-lg border border-orange-100 bg-white p-3 text-xs leading-5 text-gray-800 focus:outline-none"
                 />
               ) : (
-                <p className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3" style={MR}>
-                  Prompt अजून generate झालेला नाही. Thumbnail manually upload करून publish करू शकता.
-                </p>
+                <div className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3" style={MR}>
+                  <p className="mb-3">Prompt अजून generate झालेला नाही. खालील button वापरून prompt generate करा.</p>
+                  <button
+                    onClick={generateThumbnailPrompt}
+                    disabled={prompting}
+                    className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 disabled:opacity-50"
+                  >
+                    {prompting ? "Generating prompt..." : "Generate Thumbnail Prompt"}
+                  </button>
+                </div>
               )}
 
               {!imageUrl && (

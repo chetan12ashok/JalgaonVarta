@@ -35,6 +35,7 @@ export default function QueuePage() {
   const [editImage,     setEditImage]     = useState<string | null>(null);
   const [uploading,     setUploading]     = useState(false);
   const [processing,    setProcessing]    = useState<string | null>(null);
+  const [prompting,     setPrompting]     = useState<string | null>(null);
   const [page,          setPage]          = useState(1);
   const [total,         setTotal]         = useState(0);
   const [toast,         setToast]         = useState<{ msg: string; type: "success"|"error" } | null>(null);
@@ -104,6 +105,28 @@ export default function QueuePage() {
     } catch {
       showToast("Prompt copy failed", "error");
     }
+  }
+
+  async function generateThumbnailPrompt(article: Article) {
+    setPrompting(article.id);
+    try {
+      const res = await fetch(`/api/articles/${article.id}/thumbnail-prompt`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Prompt generation failed");
+
+      const updatedArticle = {
+        ...article,
+        thumbnailPrompt: data.thumbnailPrompt,
+        thumbnailMode: data.thumbnailMode,
+        thumbnailRequiresReference: data.thumbnailRequiresReference,
+      };
+      setArticles((items) => items.map((item) => item.id === article.id ? updatedArticle : item));
+      if (selected?.id === article.id) setSelected(updatedArticle);
+      showToast("✅ Thumbnail prompt generate झाला!");
+    } catch (err: any) {
+      showToast(err.message || "Prompt generation failed", "error");
+    }
+    setPrompting(null);
   }
 
   async function handleAction(id: string, status: "PUBLISHED" | "REJECTED") {
@@ -270,12 +293,20 @@ export default function QueuePage() {
                         ? "Existing/source thumbnail reference required"
                         : "Existing thumbnail reference not required"}
                     </span>
-                    {selected.thumbnailPrompt && (
+                    {selected.thumbnailPrompt ? (
                       <button
                         onClick={() => copyThumbnailPrompt(selected.thumbnailPrompt || "")}
                         className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700"
                       >
                         Copy Prompt
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => generateThumbnailPrompt(selected)}
+                        disabled={prompting === selected.id}
+                        className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700 disabled:opacity-50"
+                      >
+                        {prompting === selected.id ? "Generating..." : "Generate Prompt"}
                       </button>
                     )}
                   </div>
@@ -307,9 +338,16 @@ export default function QueuePage() {
                     className="w-full rounded-lg border border-orange-100 bg-white p-3 text-xs leading-5 text-gray-800 focus:outline-none"
                   />
                 ) : (
-                  <p className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3">
-                    Prompt अजून generate झालेला नाही. Thumbnail manually upload करून publish करू शकता.
-                  </p>
+                  <div className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3">
+                    <p className="mb-3">Prompt अजून generate झालेला नाही. खालील button वापरून prompt generate करा.</p>
+                    <button
+                      onClick={() => generateThumbnailPrompt(selected)}
+                      disabled={prompting === selected.id}
+                      className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 disabled:opacity-50"
+                    >
+                      {prompting === selected.id ? "Generating prompt..." : "Generate Thumbnail Prompt"}
+                    </button>
+                  </div>
                 )}
 
                 {!editImage && (
@@ -419,6 +457,11 @@ export default function QueuePage() {
                         {article.thumbnailMode}
                       </span>
                     )}
+                    {!article.thumbnailPrompt && (
+                      <span className="text-xs text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">
+                        Prompt missing
+                      </span>
+                    )}
                     <span className="text-xs text-gray-400 ml-auto">
                       {new Date(article.createdAt).toLocaleDateString("mr-IN")}
                     </span>
@@ -434,6 +477,15 @@ export default function QueuePage() {
                   className="flex-1 py-2 bg-orange-50 text-orange-700 font-medium rounded-xl text-sm hover:bg-orange-100 transition-colors">
                   ✏️ Review & Edit
                 </button>
+                {!article.thumbnailPrompt && (
+                  <button
+                    onClick={() => generateThumbnailPrompt(article)}
+                    disabled={prompting === article.id}
+                    className="px-4 py-2 bg-purple-50 text-purple-700 font-medium rounded-xl text-sm hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  >
+                    {prompting === article.id ? "..." : "🎨 Prompt"}
+                  </button>
+                )}
                 <button
                   onClick={() => handleAction(article.id, "PUBLISHED")}
                   disabled={processing === article.id}
