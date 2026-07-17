@@ -1,5 +1,6 @@
 // functions/index.js — ViralKatta Firebase Scheduled Scraper
 const { onSchedule }     = require("firebase-functions/v2/scheduler");
+const { onRequest }      = require("firebase-functions/v2/https");
 const { setGlobalOptions } = require("firebase-functions/v2");
 setGlobalOptions({ region: "us-east4" });
 
@@ -8,7 +9,7 @@ setGlobalOptions({ region: "us-east4" });
 
 const { initializeApp, getApps } = require("firebase/app");
 const {
-  getFirestore, collection, addDoc, getDocs,
+  getFirestore, collection, addDoc, getDocs, getDoc,
   query, where, limit, updateDoc, doc, Timestamp, increment,
 } = require("firebase/firestore");
 const { getStorage, ref, uploadBytes, getDownloadURL } = require("firebase/storage");
@@ -223,6 +224,7 @@ The "prompt" field must contain:
 - written fully in ENGLISH
 - optimized for image-generation models
 - ready for direct use
+- clear instructions shoulde be mention do dont put the liveTrends logo or name anyware on the thumbnail.
 
 Return ONLY JSON.`;
 
@@ -262,6 +264,142 @@ function decodeEntities(text) {
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+const ADMIN_QUEUE_URL = "https://jalgaonvarta--virralkatta.us-east4.hosted.app/admin/queue";
+
+const WHATSAPP_SYSTEM_PROMPT = `You are ViralKatta's WhatsApp Content Editor for Marathi news.
+Given a Marathi news article, generate a viral WhatsApp news message.
+
+FORMAT:
+Line 1: Main headline in *bold* — use the most fitting emojis based on the news content
+Line 2: Key detail/subheadline in *bold* — use fitting emojis based on the news content
+Line 3: Curiosity hook to make reader click — e.g. "सविस्तर वाचा 👇👇" or creative variation
+
+EMOJI RULES:
+- You have complete freedom to use ANY emojis that best match the news story
+- Choose emojis that emotionally match the tone — shocking, happy, political etc
+- Use 1-3 emojis per line placed naturally where they add impact
+
+WRITING RULES:
+- Write in Marathi language only
+- Make line 1 extremely clickable — create curiosity, urgency or surprise
+- Use *asterisks* for bold text (WhatsApp format)
+- Return ONLY JSON: {"line1": "...", "line2": "...", "line3": "..."}`;
+
+function escapeHtml(text = "") {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function buildTelegramText(article) {
+  const shortNews = article.shortContent || article.excerpt || "";
+  const fullNews = stripHtml(article.content || article.excerpt || "").substring(0, 2400);
+  const sourceLine = article.sourceName ? `\n\nSource: ${escapeHtml(article.sourceName)}` : "";
+
+  return [
+    `<b>${escapeHtml(article.title)}</b>`,
+    shortNews ? `\n<b>Short News:</b>\n${escapeHtml(shortNews)}` : "",
+    fullNews ? `\n<b>Full News:</b>\n${escapeHtml(fullNews)}` : "",
+    sourceLine,
+  ].join("").substring(0, 3900);
+}
+
+async function sendTelegramArticle(article) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId || !article?.id) return;
+
+  const replyMarkup = {
+    inline_keyboard: [[
+      { text: "Approve", callback_data: `approve:${article.id}` },
+      { text: "Edit", url: ADMIN_QUEUE_URL },
+    ]],
+  };
+
+  try {
+    if (article.imageUrl) {
+      await axios.post(`https://api.telegram.org/bot${token}/sendPhoto`, {
+        chat_id: chatId,
+        photo: article.imageUrl,
+        caption: `<b>${escapeHtml(article.title)}</b>\n\n${escapeHtml(article.shortContent || article.excerpt || "")}`.substring(0, 1000),
+        parse_mode: "HTML",
+      });
+    }
+
+    await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+      chat_id: chatId,
+      text: buildTelegramText(article),
+      parse_mode: "HTML",
+      reply_markup: replyMarkup,
+    });
+    console.log(`  📱 Telegram notification sent: ${article.title.substring(0, 45)}`);
+  } catch (err) {
+    console.error(`  ⚠️  Failed to send Telegram notification:`, err.response?.data || err.message);
+  }
+}
+
+async function answerTelegramCallback(callbackQueryId, text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token || !callbackQueryId) return;
+
+  await axios.post(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
+    callback_query_id: callbackQueryId,
+    text,
+    show_alert: false,
+  });
+}
+
+async function sendTelegramMessage(chatId, text, replyToMessageId = null) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token || !chatId || !text) return;
+
+  const payload = {
+    chat_id: chatId,
+    text,
+    disable_web_page_preview: true,
+  };
+  if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+
+  await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, payload);
+}
+
+async function generateWhatsAppMessage(article) {
+  if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY missing");
+
+  const settingsSnap = await getDoc(doc(db, "settings", "whatsapp"));
+  const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+  const groupLink = settings.groupLink || "";
+  const siteUrl = (settings.siteUrl || "https://viralkatta.com").replace(/\/$/, "");
+  const articleUrl = `${siteUrl}/article/${article.slug}`;
+  const plainContent = stripHtml(article.content || "").substring(0, 1200);
+
+  const response = await axios.post("https://api.openai.com/v1/chat/completions", {
+    model: "gpt-4o-mini",
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: WHATSAPP_SYSTEM_PROMPT },
+      { role: "user", content: `Title: ${article.title}\n\nExcerpt: ${article.excerpt || ""}\n\nContent: ${plainContent}` },
+    ],
+    max_tokens: 400,
+    temperature: 0.85,
+  }, {
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    timeout: 30000,
+  });
+
+  const parsed = JSON.parse(response.data.choices[0].message.content);
+  const joinBlock = groupLink
+    ? `\n\n💬 *ताज्या बातम्या सर्वात आधी मिळवा!*\n🟢 *आमच्या WhatsApp ग्रुपमध्ये सामील व्हा* 👇\n${groupLink}`
+    : "";
+
+  return `${parsed.line1}\n${parsed.line2}\n${parsed.line3}\n\n${articleUrl}${joinBlock}`;
 }
 
 // ── STEP 1: Perplexity — Rewrite article in Marathi (JSON output) ─────────
@@ -441,9 +579,10 @@ async function generateImageFullGeneration(imagePrompt) {
       model:         "gpt-image-2",
       prompt:        imagePrompt,
       n:             1,
-      size:          "1536x1024",
-      quality:       "high",
+      size:          "1280x720",
+      quality:      "high",
       output_format: "jpeg",
+      output_compression: 50,
     },
     {
       headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
@@ -467,6 +606,8 @@ async function generateImageIdentityPreserved(imagePrompt, originalImageUrl) {
   form.append("prompt", imagePrompt+" Most important dont use the layout or dont copy the format of attached image only take the photo from the attached image the layout of thumnail shoude not be copy");
   form.append("n",      "1");
   form.append("size",   "1536x1024");
+  form.append("output_format", "jpeg");
+  form.append("output_compression", "65");
   // Attach original image as reference (must be PNG for edits endpoint)
   // We send as JPEG — API accepts it
   form.append("image", imgBuffer, {
@@ -524,7 +665,7 @@ async function uploadToFirebaseStorage(imageData, slug) {
     const storageRef  = ref(storage, filename);
     await uploadBytes(storageRef, imageBuffer, { contentType: "image/jpeg" });
     const publicUrl = await getDownloadURL(storageRef);
-    console.log(`  ✅ Uploaded to Firebase Storage`);
+    console.log(`  ✅ Uploaded compressed thumbnail (${Math.round(imageBuffer.length / 1024)}KB)`);
     return publicUrl;
   } catch (err) {
     console.error("  ⚠️  Storage upload failed:", err.message);
@@ -669,7 +810,7 @@ async function processArticle(raw, source) {
   // Step 6: Save to Firestore
   const now  = Timestamp.now();
   const slug = rewritten.englishSlug ? buildEnglishSlug(rewritten.englishSlug) : makeSlug(rewritten.title);
-  await addDoc(collection(db, "articles"), {
+  const articlePayload = {
     title:           rewritten.title,
     slug,
     excerpt:         rewritten.excerpt,
@@ -693,7 +834,8 @@ async function processArticle(raw, source) {
     sourceName:      source.name,
     tags:            rewritten.tags || [],
     shortContent:    rewritten.shortContent || null,
-  });
+  };
+  const articleRef = await addDoc(collection(db, "articles"), articlePayload);
 
   // Update source stats
   await updateDoc(doc(db, "sources", source.id), {
@@ -703,7 +845,7 @@ async function processArticle(raw, source) {
 
   console.log(`  ✅ Saved: ${rewritten.title.substring(0, 50)}`);
   console.log(`  🖼️  Image: ${imageUrl ? "✅ Saved to Storage" : "❌ None"}`);
-  return true;
+  return { id: articleRef.id, ...articlePayload };
 }
 
 // ── Main run ──────────────────────────────────────────────────────────────
@@ -715,7 +857,7 @@ async function runScraper() {
   const sources     = sourcesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   console.log(`📋 Active sources: ${sources.length}`);
 
-  let totalNew = 0;
+  const newArticles = [];
 
   for (const source of sources) {
     console.log(`\n🌐 ${source.name} (${source.type})`);
@@ -739,17 +881,117 @@ async function runScraper() {
         continue;
       }
 
-      const saved = await processArticle(raw, source);
-      if (saved) totalNew++;
+      const savedArticle = await processArticle(raw, source);
+      if (savedArticle) newArticles.push(savedArticle);
 
       // Rate limit — 3s between articles (DALL-E is slow)
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
 
-  console.log(`\n✨ Done! ${totalNew} new articles added to queue`);
+  console.log(`\n✨ Done! ${newArticles.length} new articles added to queue`);
+  for (const article of newArticles) {
+    await sendTelegramArticle(article);
+  }
   console.log("─".repeat(60));
 }
+
+exports.telegramWebhook = onRequest({
+  timeoutSeconds: 120,
+  memory: "256MiB",
+}, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).send("Method not allowed");
+    return;
+  }
+
+  const callback = req.body?.callback_query;
+  const data = callback?.data || "";
+  const callbackQueryId = callback?.id;
+
+  if (!data.startsWith("approve:")) {
+    res.status(200).send("ignored");
+    return;
+  }
+
+  const articleId = data.replace("approve:", "").trim();
+  if (!articleId) {
+    await answerTelegramCallback(callbackQueryId, "Article ID missing");
+    res.status(200).send("missing article id");
+    return;
+  }
+
+  try {
+    const articleRef = doc(db, "articles", articleId);
+    const snap = await getDoc(articleRef);
+
+    if (!snap.exists()) {
+      await answerTelegramCallback(callbackQueryId, "Article not found");
+      res.status(200).send("not found");
+      return;
+    }
+
+    const article = snap.data();
+    const chatId = callback?.message?.chat?.id;
+    const messageId = callback?.message?.message_id;
+
+    await answerTelegramCallback(callbackQueryId, "Approving and generating WhatsApp message...");
+
+    const updates = {
+      status: "PUBLISHED",
+      updatedAt: Timestamp.now(),
+    };
+
+    if (!article.publishedAt) updates.publishedAt = Timestamp.now();
+
+    await updateDoc(articleRef, updates);
+
+    let whatsappMessage = "";
+    try {
+      whatsappMessage = await generateWhatsAppMessage({ id: articleId, ...article });
+      await updateDoc(articleRef, {
+        whatsappMessage,
+        updatedAt: Timestamp.now(),
+      });
+    } catch (err) {
+      console.error("WhatsApp generation failed:", err.response?.data || err.message);
+    }
+
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const message = callback?.message;
+    if (token && message?.chat?.id && message?.message_id) {
+      await axios.post(`https://api.telegram.org/bot${token}/editMessageReplyMarkup`, {
+        chat_id: message.chat.id,
+        message_id: message.message_id,
+        reply_markup: {
+          inline_keyboard: [[
+            { text: "Approved", url: `${ADMIN_QUEUE_URL}` },
+          ]],
+        },
+      }).catch(() => {});
+    }
+
+    if (whatsappMessage) {
+      await sendTelegramMessage(
+        chatId,
+        `Approved and published.\n\nWhatsApp share message:\n\n${whatsappMessage}`,
+        messageId,
+      );
+    } else {
+      await sendTelegramMessage(
+        chatId,
+        "Approved and published, but WhatsApp message generation failed. Please generate it from the admin panel.",
+        messageId,
+      );
+    }
+
+    res.status(200).send("approved");
+  } catch (err) {
+    console.error("Telegram approve failed:", err.response?.data || err.message);
+    await answerTelegramCallback(callbackQueryId, "Approve failed");
+    res.status(200).send("failed");
+  }
+});
 
 // ── Firebase Scheduled Function — every 10 minutes ─────────────────────────
 exports.viralkattaScraper = onSchedule({

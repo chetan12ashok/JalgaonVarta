@@ -18,7 +18,11 @@ const CATEGORIES = [
 const FONT_SIZES = [14, 16, 17, 19, 21];
 const FS_LABELS  = ["अ−", "अ", "अ+"];
 
-export default function Header() {
+interface HeaderProps {
+  hideDarkMode?: boolean;
+}
+
+export default function Header({ hideDarkMode = false }: HeaderProps) {
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [searchOpen,  setSearchOpen]  = useState(false);
   const [query,       setQuery]       = useState("");
@@ -144,16 +148,20 @@ export default function Header() {
             <button className="fs-btn" onClick={() => changeFs(1)}  title="Font size increase">A+</button>
           </div>
 
-          {/* Dark mode */}
-          <button
-            onClick={toggleDark}
-            className={`dark-toggle ${dark ? "on" : ""}`}
-            title={dark ? "Light mode" : "Dark mode"}
-            aria-label="Toggle dark mode"
-          />
-          <span className="text-sm hidden sm:block" style={{ color: "var(--text-light)" }}>
-            {dark ? "🌙" : "☀️"}
-          </span>
+          {!hideDarkMode && (
+            <>
+              {/* Dark mode */}
+              <button
+                onClick={toggleDark}
+                className={`dark-toggle ${dark ? "on" : ""}`}
+                title={dark ? "Light mode" : "Dark mode"}
+                aria-label="Toggle dark mode"
+              />
+              <span className="text-sm hidden sm:block" style={{ color: "var(--text-light)" }}>
+                {dark ? "🌙" : "☀️"}
+              </span>
+            </>
+          )}
 
           {/* Mobile search */}
           <button

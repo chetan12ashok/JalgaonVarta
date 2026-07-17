@@ -31,8 +31,11 @@ export default function QueuePage() {
   const [editImage,     setEditImage]     = useState<string | null>(null);
   const [uploading,     setUploading]     = useState(false);
   const [processing,    setProcessing]    = useState<string | null>(null);
+  const [page,          setPage]          = useState(1);
+  const [total,         setTotal]         = useState(0);
   const [toast,         setToast]         = useState<{ msg: string; type: "success"|"error" } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pageSize = 20;
 
   const showToast = (msg: string, type: "success"|"error" = "success") => {
     setToast({ msg, type });
@@ -42,12 +45,13 @@ export default function QueuePage() {
   const loadQueue = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch("/api/articles?status=PENDING&limit=20");
+      const res  = await fetch(`/api/articles?status=PENDING&page=${page}&limit=${pageSize}`);
       const data = await res.json();
       setArticles(data.articles || []);
+      setTotal(data.total || 0);
     } catch { showToast("Queue लोड करताना error", "error"); }
     setLoading(false);
-  }, []);
+  }, [page]);
 
   const loadCategories = useCallback(async () => {
     const res  = await fetch("/api/categories");
@@ -125,7 +129,7 @@ export default function QueuePage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Pending Queue</h1>
-          <p className="text-gray-500 text-sm mt-1">{articles.length} बातम्या review साठी</p>
+          <p className="text-gray-500 text-sm mt-1">{total} बातम्या review साठी</p>
         </div>
         <button onClick={loadQueue} className="px-4 py-2 bg-orange-100 text-orange-700 rounded-xl text-sm font-medium hover:bg-orange-200 transition-colors">
           🔄 Refresh
@@ -167,7 +171,7 @@ export default function QueuePage() {
 
               {/* Current image preview */}
               {editImage && (
-                <div className="relative rounded-xl overflow-hidden mb-3 bg-black" style={{ aspectRatio: "16/9", maxWidth: "480px" }}>
+                <div className="relative rounded-xl overflow-hidden mb-3 bg-black" style={{ aspectRatio: "3/2", maxWidth: "480px" }}>
                   <Image
                     src={editImage}
                     alt="Thumbnail"
@@ -288,7 +292,7 @@ export default function QueuePage() {
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 hover:shadow-md transition-all overflow-hidden">
               <div className="flex gap-0">
                 {/* Thumbnail preview */}
-                <div className="relative flex-shrink-0 bg-black" style={{ width: "160px", aspectRatio: "16/9" }}>
+                <div className="relative flex-shrink-0 bg-black" style={{ width: "160px", aspectRatio: "3/2" }}>
                   {article.imageUrl ? (
                     <Image src={article.imageUrl} alt={article.title} fill className="object-contain" />
                   ) : (
@@ -349,6 +353,28 @@ export default function QueuePage() {
               </div>
             </div>
           ))}
+
+          {total > pageSize && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm disabled:opacity-40 hover:bg-gray-50 transition-colors"
+              >
+                मागे
+              </button>
+              <span className="text-sm text-gray-500">
+                Page {page} of {Math.ceil(total / pageSize)}
+              </span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= Math.ceil(total / pageSize)}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm disabled:opacity-40 hover:bg-gray-50 transition-colors"
+              >
+                पुढे
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

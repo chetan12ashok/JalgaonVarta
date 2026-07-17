@@ -301,7 +301,7 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-gray-700">Thumbnail Image</label>
             {imageUrl ? (
-              <div className="relative rounded-xl overflow-hidden bg-black" style={{ aspectRatio:"16/9", maxWidth:"480px" }}>
+              <div className="relative rounded-xl overflow-hidden bg-black" style={{ aspectRatio:"3/2", maxWidth:"480px" }}>
                 <Image src={imageUrl} alt="Thumbnail" fill className="object-contain" />
                 <button onClick={() => setImageUrl(null)}
                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-red-600 font-bold">

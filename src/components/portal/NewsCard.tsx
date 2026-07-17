@@ -25,6 +25,7 @@ interface Article {
 interface Props { article: Article; variant?: "featured" | "horizontal" | "compact" | "default" | "list"; }
 
 const MR = "'Noto Sans Devanagari','Mukta',sans-serif";
+const THUMBNAIL_RATIO = "3/2";
 
 // Plain span — NOT a Link, since the whole card is already a Link
 function CatBadge({ name, color }: { name: string; color: string }) {
@@ -48,9 +49,9 @@ export default function NewsCard({ article, variant = "default" }: Props) {
 
   /* ── Featured ── */
   if (variant === "featured") return (
-    <Link href={href} className="group block relative rounded-2xl overflow-hidden bg-gray-900" style={{ aspectRatio:"16/9" }}>
+    <Link href={href} className="group block relative rounded-2xl overflow-hidden bg-gray-900" style={{ aspectRatio:THUMBNAIL_RATIO }}>
       {article.imageUrl
-        ? <Image src={article.imageUrl} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+        ? <Image src={article.imageUrl} alt={article.title} fill className="object-contain" />
         : <div className="absolute inset-0" style={{ background:`linear-gradient(135deg,${catColor}88,${catColor})` }} />
       }
       <div className="absolute inset-0" style={{ background:"linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.3) 55%,transparent 100%)" }} />
@@ -70,9 +71,9 @@ export default function NewsCard({ article, variant = "default" }: Props) {
   /* ── Horizontal ── */
   if (variant === "horizontal") return (
     <Link href={href} className="vk-card group flex gap-3 p-3">
-      <div className="relative flex-shrink-0 rounded-lg overflow-hidden bg-black" style={{ width:96, height:72 }}>
+      <div className="relative flex-shrink-0 rounded-lg overflow-hidden bg-black" style={{ width:108, aspectRatio:THUMBNAIL_RATIO }}>
         {article.imageUrl
-          ? <Image src={article.imageUrl} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+          ? <Image src={article.imageUrl} alt={article.title} fill className="object-contain" />
           : <div className="w-full h-full" style={{ background:`linear-gradient(135deg,${catColor}55,${catColor}99)` }} />
         }
       </div>
@@ -104,8 +105,8 @@ export default function NewsCard({ article, variant = "default" }: Props) {
   if (variant === "list") return (
     <Link href={href} className="vk-card group flex gap-4 p-4">
       {article.imageUrl && (
-        <div className="relative flex-shrink-0 rounded-lg overflow-hidden bg-black" style={{ width:128, height:96 }}>
-          <Image src={article.imageUrl} alt={article.title} fill className="object-cover" />
+        <div className="relative flex-shrink-0 rounded-lg overflow-hidden bg-black" style={{ width:144, aspectRatio:THUMBNAIL_RATIO }}>
+          <Image src={article.imageUrl} alt={article.title} fill className="object-contain" />
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -125,9 +126,9 @@ export default function NewsCard({ article, variant = "default" }: Props) {
   /* ── Default card ── */
   return (
     <Link href={href} className="vk-card group block">
-      <div className="relative overflow-hidden bg-black" style={{ aspectRatio:"16/9" }}>
+      <div className="relative overflow-hidden bg-black" style={{ aspectRatio:THUMBNAIL_RATIO }}>
         {article.imageUrl
-          ? <Image src={article.imageUrl} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+          ? <Image src={article.imageUrl} alt={article.title} fill className="object-contain" />
           : <div className="w-full h-full flex items-center justify-center" style={{ background:`linear-gradient(135deg,${catColor}33,${catColor}66)` }}>
               <span className="text-4xl opacity-40">📰</span>
             </div>

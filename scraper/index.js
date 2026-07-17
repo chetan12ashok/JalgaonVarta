@@ -220,6 +220,7 @@ The "prompt" field must contain:
 - written fully in ENGLISH
 - optimized for image-generation models
 - ready for direct use
+- clear instructions shoulde be mention do dont put the liveTrends logo or name anyware on the thumbnail.
 
 Return ONLY JSON.`;
 
@@ -259,6 +260,63 @@ function decodeEntities(text) {
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+const ADMIN_QUEUE_URL = "https://jalgaonvarta--virralkatta.us-east4.hosted.app/admin/queue";
+
+function escapeHtml(text = "") {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function buildTelegramText(article) {
+  const shortNews = article.shortContent || article.excerpt || "";
+  const fullNews = stripHtml(article.content || article.excerpt || "").substring(0, 2400);
+  const sourceLine = article.sourceName ? `\n\nSource: ${escapeHtml(article.sourceName)}` : "";
+
+  return [
+    `<b>${escapeHtml(article.title)}</b>`,
+    shortNews ? `\n<b>Short News:</b>\n${escapeHtml(shortNews)}` : "",
+    fullNews ? `\n<b>Full News:</b>\n${escapeHtml(fullNews)}` : "",
+    sourceLine,
+  ].join("").substring(0, 3900);
+}
+
+async function sendTelegramArticle(article) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId || !article?.id) return;
+
+  const replyMarkup = {
+    inline_keyboard: [[
+      { text: "Approve", callback_data: `approve:${article.id}` },
+      { text: "Edit", url: ADMIN_QUEUE_URL },
+    ]],
+  };
+
+  try {
+    if (article.imageUrl) {
+      await axios.post(`https://api.telegram.org/bot${token}/sendPhoto`, {
+        chat_id: chatId,
+        photo: article.imageUrl,
+        caption: `<b>${escapeHtml(article.title)}</b>\n\n${escapeHtml(article.shortContent || article.excerpt || "")}`.substring(0, 1000),
+        parse_mode: "HTML",
+      });
+    }
+
+    await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+      chat_id: chatId,
+      text: buildTelegramText(article),
+      parse_mode: "HTML",
+      reply_markup: replyMarkup,
+    });
+    console.log(`  📱 Telegram notification sent: ${article.title.substring(0, 45)}`);
+  } catch (err) {
+    console.error(`  ⚠️  Failed to send Telegram notification:`, err.response?.data || err.message);
+  }
 }
 
 // ── STEP 1: Perplexity — Rewrite article in Marathi (JSON output) ─────────
@@ -438,9 +496,10 @@ async function generateImageFullGeneration(imagePrompt) {
       model:         "gpt-image-2",
       prompt:        imagePrompt,
       n:             1,
-      size:          "1536x1024",
-      quality:       "high",
+      size:          "1280x720",
+      quality:       "medium",
       output_format: "jpeg",
+      output_compression: 65,
     },
     {
       headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
@@ -464,6 +523,8 @@ async function generateImageIdentityPreserved(imagePrompt, originalImageUrl) {
   form.append("prompt", imagePrompt);
   form.append("n",      "1");
   form.append("size",   "1536x1024");
+  form.append("output_format", "jpeg");
+  form.append("output_compression", "65");
   // Attach original image as reference (must be PNG for edits endpoint)
   // We send as JPEG — API accepts it
   form.append("image", imgBuffer, {
@@ -521,7 +582,7 @@ async function uploadToFirebaseStorage(imageData, slug) {
     const storageRef  = ref(storage, filename);
     await uploadBytes(storageRef, imageBuffer, { contentType: "image/jpeg" });
     const publicUrl = await getDownloadURL(storageRef);
-    console.log(`  ✅ Uploaded to Firebase Storage`);
+    console.log(`  ✅ Uploaded compressed thumbnail (${Math.round(imageBuffer.length / 1024)}KB)`);
     return publicUrl;
   } catch (err) {
     console.error("  ⚠️  Storage upload failed:", err.message);
@@ -666,7 +727,7 @@ async function processArticle(raw, source) {
   // Step 6: Save to Firestore
   const now  = Timestamp.now();
   const slug = rewritten.englishSlug ? buildEnglishSlug(rewritten.englishSlug) : makeSlug(rewritten.title);
-  await addDoc(collection(db, "articles"), {
+  const articlePayload = {
     title:           rewritten.title,
     slug,
     excerpt:         rewritten.excerpt,
@@ -690,7 +751,8 @@ async function processArticle(raw, source) {
     sourceName:      source.name,
     tags:            rewritten.tags || [],
     shortContent:    rewritten.shortContent || null,
-  });
+  };
+  const articleRef = await addDoc(collection(db, "articles"), articlePayload);
 
   // Update source stats
   await updateDoc(doc(db, "sources", source.id), {
@@ -700,7 +762,7 @@ async function processArticle(raw, source) {
 
   console.log(`  ✅ Saved: ${rewritten.title.substring(0, 50)}`);
   console.log(`  🖼️  Image: ${imageUrl ? "✅ Saved to Storage" : "❌ None"}`);
-  return true;
+  return { id: articleRef.id, ...articlePayload };
 }
 
 // ── Main run ──────────────────────────────────────────────────────────────
@@ -712,7 +774,7 @@ async function runScraper() {
   const sources     = sourcesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   console.log(`📋 Active sources: ${sources.length}`);
 
-  let totalNew = 0;
+  const newArticles = [];
 
   for (const source of sources) {
     console.log(`\n🌐 ${source.name} (${source.type})`);
@@ -736,15 +798,18 @@ async function runScraper() {
         continue;
       }
 
-      const saved = await processArticle(raw, source);
-      if (saved) totalNew++;
+      const savedArticle = await processArticle(raw, source);
+      if (savedArticle) newArticles.push(savedArticle);
 
       // Rate limit — 3s between articles (DALL-E is slow)
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
 
-  console.log(`\n✨ Done! ${totalNew} new articles added to queue`);
+  console.log(`\n✨ Done! ${newArticles.length} new articles added to queue`);
+  for (const article of newArticles) {
+    await sendTelegramArticle(article);
+  }
   console.log("─".repeat(60));
 }
 

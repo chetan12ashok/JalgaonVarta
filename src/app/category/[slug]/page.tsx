@@ -4,10 +4,17 @@ import { getCategoryBySlug, getArticles } from "@/lib/db";
 import Header from "@/components/portal/Header";
 import Footer from "@/components/portal/Footer";
 import NewsCard from "@/components/portal/NewsCard";
+import Pagination from "@/components/portal/Pagination";
 
 const MR_FONT = "'Noto Sans Devanagari', 'Mukta', sans-serif";
+const PAGE_SIZE = 24;
 
-interface Props { params: { slug: string } }
+interface Props { params: { slug: string }; searchParams?: { page?: string } }
+
+function parsePage(value?: string) {
+  const page = Number(value || "1");
+  return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+}
 
 export async function generateMetadata({ params }: Props) {
   const cat = await getCategoryBySlug(params.slug);
@@ -15,13 +22,15 @@ export async function generateMetadata({ params }: Props) {
   return { title: `${cat.name} | ViralKatta`, description: cat.description || `${cat.name} बातम्या` };
 }
 
-export default async function CategoryPage({ params }: Props) {
+export default async function CategoryPage({ params, searchParams }: Props) {
   const category = await getCategoryBySlug(params.slug);
   if (!category) notFound();
 
+  const currentPage = parsePage(searchParams?.page);
   const { articles, total } = await getArticles({
-    status: "PUBLISHED", categoryId: category.id, pageSize: 24,
+    status: "PUBLISHED", categoryId: category.id, page: currentPage, pageSize: PAGE_SIZE,
   });
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <>
@@ -68,9 +77,16 @@ export default async function CategoryPage({ params }: Props) {
         </div>
 
         {articles.length > 0 ? (
-          <div className="grid-4">
-            {articles.map((a) => <NewsCard key={a.id} article={a} />)}
-          </div>
+          <>
+            <div className="grid-4">
+              {articles.map((a) => <NewsCard key={a.id} article={a} />)}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              basePath={`/category/${category.slug}`}
+            />
+          </>
         ) : (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">📰</div>

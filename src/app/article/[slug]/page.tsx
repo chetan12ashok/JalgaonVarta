@@ -62,7 +62,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <>
-      <Header />
+      <Header hideDarkMode />
 
       {/* Reading toolbar — sticky, with progress bar */}
       <ReadingToolbar content={plainText} title={article.title} />
@@ -140,7 +140,7 @@ export default async function ArticlePage({ params }: Props) {
 
             {/* Featured image */}
             {article.imageUrl && (
-              <div className="relative rounded-2xl overflow-hidden mb-6 bg-gray-100" style={{ aspectRatio: "16/9" }}>
+              <div className="relative rounded-2xl overflow-hidden mb-6 bg-gray-100" style={{ aspectRatio: "3/2" }}>
                 <Image src={article.imageUrl} alt={article.title} fill className="object-contain" style={{ background: "#111" }} priority />
               </div>
             )}
@@ -196,8 +196,8 @@ export default async function ArticlePage({ params }: Props) {
                     className="flex items-start gap-3 py-3 group"
                     style={{ borderBottom: "1px solid var(--border)" }}>
                     {a.imageUrl && (
-                      <div className="relative w-20 h-14 flex-shrink-0 rounded-lg overflow-hidden">
-                        <Image src={a.imageUrl} alt={a.title} fill className="object-cover" />
+                      <div className="relative flex-shrink-0 rounded-lg overflow-hidden bg-black" style={{ width: 90, aspectRatio: "3/2" }}>
+                        <Image src={a.imageUrl} alt={a.title} fill className="object-contain" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
