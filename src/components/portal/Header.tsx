@@ -97,14 +97,14 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
       </div>
 
       {/* Main header */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 md:py-3 flex items-center gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center flex-shrink-0 group" aria-label="ViralKatta home">
           <img
             src="/viral-katta-landscape.png"
             alt="ViralKatta"
             className="transition-transform group-hover:scale-[1.02]"
-            style={{ width: "min(210px, 48vw)", height: 58, objectFit: "contain", objectPosition: "left center" }}
+            style={{ width: "clamp(210px, 25vw, 320px)", height: 76, objectFit: "contain", objectPosition: "left center" }}
           />
         </Link>
 
