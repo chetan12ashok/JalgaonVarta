@@ -118,7 +118,7 @@ export default function NewArticlePage() {
           </label>
           <input type="text" value={title} onChange={e => setTitle(e.target.value)}
             placeholder="बातमीचे शीर्षक लिहा..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100"
             style={MR} />
         </div>
 
@@ -127,7 +127,7 @@ export default function NewArticlePage() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5" style={MR}>Category *</label>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-yellow-400"
               style={MR}>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -135,7 +135,7 @@ export default function NewArticlePage() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
             <select value={status} onChange={e => setStatus(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400">
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-yellow-400">
               <option value="PENDING">PENDING</option>
               <option value="PUBLISHED">PUBLISHED</option>
             </select>
@@ -147,7 +147,7 @@ export default function NewArticlePage() {
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">Thumbnail URL (optional)</label>
           <input type="url" value={imageUrl} onChange={e => setImageUrl(e.target.value)}
             placeholder="https://..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400" />
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-yellow-400" />
         </div>
 
         {/* Excerpt */}
@@ -157,7 +157,7 @@ export default function NewArticlePage() {
           </label>
           <textarea rows={2} value={excerpt} onChange={e => setExcerpt(e.target.value)}
             placeholder="एक-दोन वाक्यांचा सारांश..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400 resize-none"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-yellow-400 resize-none"
             style={MR} />
         </div>
 
@@ -234,7 +234,7 @@ export default function NewArticlePage() {
       {/* Save */}
       <div className="flex gap-3 mt-5">
         <button onClick={handleSave} disabled={saving}
-          className="flex-1 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 text-base"
+          className="flex-1 py-3 bg-black text-white font-bold rounded-xl hover:bg-black disabled:opacity-50 text-base"
           style={MR}>
           {saving ? "सेव्ह होत आहे..." : "✅ बातमी सेव्ह करा"}
         </button>

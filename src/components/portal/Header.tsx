@@ -84,12 +84,12 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
       style={{ background: "var(--header-bg)", boxShadow: scrolled ? "0 2px 16px rgba(0,0,0,0.10)" : "none", borderBottom: "1px solid var(--border)" }}
     >
       {/* Top bar */}
-      <div style={{ background: "var(--brand)", color: "#fff" }} className="py-1.5 px-4">
+      <div style={{ background: "#000", color: "#FFD735" }} className="py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
           <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{today}</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-green-300 pulse inline-block" />
+              <span className="w-2 h-2 rounded-full pulse inline-block" style={{ background: "#FFD735" }} />
               <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>थेट बातम्या</span>
             </span>
           </div>
@@ -104,7 +104,7 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
             src="/viral-katta-landscape.png"
             alt="ViralKatta"
             className="transition-transform group-hover:scale-[1.02]"
-            style={{ width: "clamp(210px, 25vw, 320px)", height: 76, objectFit: "contain", objectPosition: "left center" }}
+            style={{ width: "clamp(220px, 26vw, 330px)", height: 78, objectFit: "contain", objectPosition: "left center" }}
           />
         </Link>
 

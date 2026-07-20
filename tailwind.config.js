@@ -21,10 +21,10 @@ module.exports = {
           900: "#7c2d12",
         },
         brand: {
-          primary: "#FF6B00",
-          dark:    "#C2410C",
-          light:   "#FFF7ED",
-          accent:  "#FF8C00",
+          primary: "#111111",
+          dark:    "#000000",
+          light:   "#FFF5BF",
+          accent:  "#FFD735",
         },
       },
       fontFamily: {
@@ -33,7 +33,7 @@ module.exports = {
         display: ["'Syne'", "sans-serif"],
       },
       backgroundImage: {
-        "saffron-gradient": "linear-gradient(135deg, #FF6B00 0%, #FF8C00 50%, #FFB347 100%)",
+        "saffron-gradient": "linear-gradient(135deg, #000000 0%, #242424 58%, #FFD735 100%)",
       },
     },
   },

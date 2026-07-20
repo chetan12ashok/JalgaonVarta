@@ -179,11 +179,11 @@ export default function ShortsClient({ shorts }: { shorts: Short[] }) {
             <div style={{ display:"flex", gap:12, alignItems:"center" }}>
               <Link href={`/article/${a.slug}`} style={{
                 flex: 1, height: 52, borderRadius: 18,
-                background: "linear-gradient(135deg,#FF5A1F,#E8420A)",
-                color: "#fff", textDecoration: "none",
+                background: "linear-gradient(135deg,#FFD735,#F2C400)",
+                color: "#000", textDecoration: "none",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontWeight: 900, fontSize: 15, fontFamily: MR,
-                boxShadow: "0 10px 24px rgba(232,66,10,0.35)",
+                boxShadow: "0 10px 24px rgba(255,215,53,0.28)",
               }}>📰 पूर्ण बातमी वाचा</Link>
 
               <button

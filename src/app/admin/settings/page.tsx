@@ -58,8 +58,8 @@ ${cleanSiteUrl}/article/example-slug${groupLink ? `\n\n💬 *ताज्या 
         {/* Site URL */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 p-5 border-b border-gray-100"
-            style={{ background:"linear-gradient(135deg,#E8420A,#B33208)" }}>
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white font-black text-lg">
+            style={{ background:"linear-gradient(135deg,#000000,#242424)" }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg" style={{ background: "#FFD735", color: "#000" }}>
               🌐
             </div>
             <div>
@@ -76,7 +76,7 @@ ${cleanSiteUrl}/article/example-slug${groupLink ? `\n\n💬 *ताज्या 
               value={siteUrl}
               onChange={e => setSiteUrl(e.target.value)}
               placeholder="https://viralkatta.com"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 font-mono"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 font-mono"
             />
             <p className="text-xs text-gray-400 mt-1.5" style={MR}>
               उदाहरण: <code className="bg-gray-100 px-1 rounded">{cleanSiteUrl}/article/news-slug</code>
@@ -134,7 +134,7 @@ ${cleanSiteUrl}/article/example-slug${groupLink ? `\n\n💬 *ताज्या 
         {/* Save button */}
         <button onClick={save} disabled={saving}
           className="w-full py-3.5 font-bold text-white rounded-xl transition-colors disabled:opacity-50"
-          style={{ background: saving ? "#9ca3af" : "#E8420A", ...MR }}>
+          style={{ background: saving ? "#9ca3af" : "#000", color: saving ? "#fff" : "#FFD735", ...MR }}>
           {saving ? "सेव्ह होत आहे..." : "💾 Settings सेव्ह करा"}
         </button>
 
@@ -145,7 +145,7 @@ ${cleanSiteUrl}/article/example-slug${groupLink ? `\n\n💬 *ताज्या 
             <p>📅 Runs every <strong className="text-gray-700">10 minutes</strong></p>
             <p>✍️ Rewrite: <strong className="text-gray-700">Perplexity sonar</strong></p>
             <p>⚡ Shorts: <strong className="text-gray-700">Perplexity sonar (60 words)</strong></p>
-            <p>🎨 Thumbnail: <strong className="text-gray-700">ChatGPT gpt-4o → gpt-image-2</strong></p>
+            <p>🎨 Thumbnail: <strong className="text-gray-700">ChatGPT prompt → manual optimized upload</strong></p>
             <p>💬 WhatsApp: <strong className="text-gray-700">gpt-4o-mini</strong></p>
           </div>
         </div>

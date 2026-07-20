@@ -93,7 +93,7 @@ function toDate(ts: any): Date {
 }
 
 function toArticle(id: string, d: any): Article {
-  const cat = { id: d.categoryId || "", name: d.categoryName || "", slug: d.categorySlug || "", color: d.categoryColor || "#FF6B00" };
+  const cat = { id: d.categoryId || "", name: d.categoryName || "", slug: d.categorySlug || "", color: d.categoryColor || "#111111" };
   return {
     id, ...d,
     imageUrl:      d.imageUrl      ?? null,
@@ -111,7 +111,7 @@ function toArticle(id: string, d: any): Article {
 }
 
 function toCategory(id: string, d: any): Category {
-  return { id, name: d.name || "", slug: d.slug || "", description: d.description ?? null, color: d.color || "#FF6B00", createdAt: toDate(d.createdAt) };
+  return { id, name: d.name || "", slug: d.slug || "", description: d.description ?? null, color: d.color || "#111111", createdAt: toDate(d.createdAt) };
 }
 
 function toSource(id: string, d: any): Source {
@@ -170,7 +170,7 @@ export async function createArticle(data: {
     publishedAt: data.status === "PUBLISHED" ? now : null,
     createdAt: now, updatedAt: now,
     categoryId: data.categoryId, categoryName: cat?.name || "",
-    categorySlug: cat?.slug || "", categoryColor: cat?.color || "#FF6B00",
+    categorySlug: cat?.slug || "", categoryColor: cat?.color || "#111111",
     sourceId: data.sourceId ?? null, sourceName: null as string | null,
   };
   const ref = await addDoc(collection(db, "articles"), payload);
@@ -223,7 +223,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 }
 
 export async function createCategory(data: { name: string; slug: string; description?: string; color?: string }): Promise<Category> {
-  const payload = { ...data, description: data.description ?? null, color: data.color || "#FF6B00", createdAt: Timestamp.now() };
+  const payload = { ...data, description: data.description ?? null, color: data.color || "#111111", createdAt: Timestamp.now() };
   const ref = await addDoc(collection(db, "categories"), payload);
   return toCategory(ref.id, payload);
 }

@@ -14,7 +14,7 @@ export default async function AdminDashboard() {
 
   const statCards = [
     { label: "Published",      value: stats.totalPublished, icon: "✅", color: "bg-green-50  text-green-700  border-green-200",  href: "/admin/articles?status=PUBLISHED" },
-    { label: "Pending Review", value: stats.totalPending,   icon: "📋", color: "bg-orange-50 text-orange-700 border-orange-200", href: "/admin/queue" },
+    { label: "Pending Review", value: stats.totalPending,   icon: "📋", color: "bg-yellow-100 text-black border-yellow-300", href: "/admin/queue" },
     { label: "Active Sources", value: stats.totalSources,   icon: "🌐", color: "bg-blue-50   text-blue-700   border-blue-200",   href: "/admin/sources" },
     { label: "Rejected",       value: stats.totalRejected,  icon: "❌", color: "bg-red-50    text-red-700    border-red-200",    href: "/admin/articles?status=REJECTED" },
   ];
@@ -45,12 +45,12 @@ export default async function AdminDashboard() {
             <h2 className="font-bold text-gray-900 flex items-center gap-2">
               📋 Pending Review
               {stats.totalPending > 0 && (
-                <span className="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-black text-white text-xs font-bold px-2 py-0.5 rounded-full">
                   {stats.totalPending}
                 </span>
               )}
             </h2>
-            <Link href="/admin/queue" className="text-sm text-orange-600 hover:underline">सर्व पहा</Link>
+            <Link href="/admin/queue" className="text-sm text-black hover:underline">सर्व पहा</Link>
           </div>
           {recentPending.length === 0 ? (
             <div className="p-8 text-center text-gray-400">
@@ -62,7 +62,7 @@ export default async function AdminDashboard() {
               {recentPending.map((a) => (
                 <div key={a.id} className="p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start gap-3">
-                    <span className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0" />
+                    <span className="w-2 h-2 bg-yellow-300 rounded-full mt-2 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold font-marathi text-gray-900 line-clamp-2">{a.title}</p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
@@ -72,7 +72,7 @@ export default async function AdminDashboard() {
                       </div>
                     </div>
                     <Link href="/admin/queue"
-                      className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full hover:bg-orange-200">
+                      className="px-3 py-1 bg-yellow-100 text-black text-xs font-medium rounded-full hover:bg-yellow-200">
                       Review
                     </Link>
                   </div>
@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h2 className="font-bold text-gray-900">🔥 Top Articles</h2>
-            <Link href="/admin/articles" className="text-sm text-orange-600 hover:underline">सर्व पहा</Link>
+            <Link href="/admin/articles" className="text-sm text-black hover:underline">सर्व पहा</Link>
           </div>
           {sortedTop.length === 0 ? (
             <div className="p-8 text-center text-gray-400">
@@ -97,9 +97,9 @@ export default async function AdminDashboard() {
               {sortedTop.map((a, i) => (
                 <div key={a.id} className="p-4 flex items-center gap-3">
                   <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                    i === 0 ? "bg-orange-500 text-white" :
-                    i === 1 ? "bg-orange-200 text-orange-800" :
-                    i === 2 ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-500"
+                    i === 0 ? "bg-black text-white" :
+                    i === 1 ? "bg-yellow-200 text-yellow-900" :
+                    i === 2 ? "bg-yellow-100 text-black" : "bg-gray-100 text-gray-500"
                   }`}>{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold font-marathi text-gray-900 line-clamp-1">{a.title}</p>

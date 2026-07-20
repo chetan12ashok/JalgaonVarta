@@ -81,26 +81,26 @@ export default function SourcesPage() {
           <p className="text-sm text-gray-500 mt-0.5">Scraper चे sources manage करा</p>
         </div>
         <button onClick={() => setShowForm(true)}
-          className="px-5 py-2.5 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors text-sm">
+          className="px-5 py-2.5 bg-black text-white font-semibold rounded-xl hover:bg-black transition-colors text-sm">
           + नवीन Source
         </button>
       </div>
 
       {/* Add form */}
       {showForm && (
-        <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 mb-6">
+        <div className="bg-white rounded-2xl border border-yellow-300 shadow-sm p-5 mb-6">
           <h3 className="font-bold text-gray-900 mb-4">नवीन Source जोडा</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Source Name</label>
               <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Jalgaon Today"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-400" />
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-400">
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400">
                 <option value="WORDPRESS">WordPress API</option>
                 <option value="RSS">RSS Feed</option>
                 <option value="SCRAPER">HTML Scraper</option>
@@ -110,12 +110,12 @@ export default function SourcesPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
               <input type="url" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                 placeholder="https://example.com/feed/"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-400" />
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400" />
             </div>
           </div>
           <div className="flex gap-3">
             <button onClick={addSource}
-              className="px-5 py-2 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors">
+              className="px-5 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-black transition-colors">
               जोडा
             </button>
             <button onClick={() => setShowForm(false)}

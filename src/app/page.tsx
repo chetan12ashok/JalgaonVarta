@@ -37,7 +37,7 @@ export default async function HomePage() {
             </span>
           </div>
           <Link href="/shorts" style={{
-            background: '#E8420A', color: '#fff', fontFamily: "'Noto Sans Devanagari', sans-serif",
+            background: '#FFD735', color: '#000', fontFamily: "'Noto Sans Devanagari', sans-serif",
             fontSize: '12px', fontWeight: 700, padding: '5px 14px', borderRadius: '20px', textDecoration: 'none',
           }}>
             पहा →

@@ -16,7 +16,7 @@ interface Article {
 
 const STATUS_COLORS: Record<string, string> = {
   PUBLISHED: "bg-green-100 text-green-700",
-  PENDING:   "bg-orange-100 text-orange-700",
+  PENDING:   "bg-yellow-100 text-black",
   REJECTED:  "bg-red-100 text-red-700",
   APPROVED:  "bg-blue-100 text-blue-700",
 };
@@ -77,7 +77,7 @@ export default function ArticlesPage() {
           <p className="text-sm text-gray-500 mt-0.5">एकूण {total} बातम्या</p>
         </div>
         <Link href="/admin/articles/new"
-          className="px-5 py-2.5 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors text-sm shadow-sm w-fit">
+          className="px-5 py-2.5 bg-black text-white font-semibold rounded-xl hover:bg-black transition-colors text-sm shadow-sm w-fit">
           + नवीन बातमी
         </Link>
       </div>
@@ -87,7 +87,7 @@ export default function ArticlesPage() {
         {["ALL", "PUBLISHED", "PENDING", "REJECTED"].map((s) => (
           <button key={s} onClick={() => { setFilter(s); setPage(1); }}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              filter === s ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              filter === s ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}>
             {s === "ALL" ? "सर्व" : s}
           </button>
@@ -95,7 +95,7 @@ export default function ArticlesPage() {
         <div className="ml-auto">
           <input type="text" placeholder="शोधा..." value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="px-4 py-1.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-orange-400 font-marathi" />
+            className="px-4 py-1.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-yellow-400 font-marathi" />
         </div>
       </div>
 
@@ -152,7 +152,7 @@ export default function ArticlesPage() {
                           </button>
                         )}
                         <Link href={`/admin/articles/${article.id}`}
-                          className="px-2 py-1 bg-orange-50 text-orange-700 rounded-lg text-xs hover:bg-orange-100 transition-colors">
+                          className="px-2 py-1 bg-yellow-100 text-black rounded-lg text-xs hover:bg-yellow-100 transition-colors">
                           Edit
                         </Link>
                         <button onClick={() => deleteArticle(article.id)}

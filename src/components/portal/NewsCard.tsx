@@ -43,7 +43,7 @@ function CatBadge({ name, color }: { name: string; color: string }) {
 export default function NewsCard({ article, variant = "default" }: Props) {
   const catName  = article.categoryName || article.category?.name  || "";
   const catSlug  = article.categorySlug || article.category?.slug  || "";
-  const catColor = article.categoryColor || article.category?.color || "#E8420A";
+  const catColor = article.categoryColor || article.category?.color || "#111111";
   const ago      = timeAgo(article.publishedAt || null);
   const href     = `/article/${article.slug}`;
 
@@ -93,7 +93,7 @@ export default function NewsCard({ article, variant = "default" }: Props) {
       <span className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ background:catColor }} />
       <div className="flex-1 min-w-0">
         <h3 style={{ fontFamily:MR, fontWeight:600, fontSize:"var(--fs-sm)", lineHeight:1.5, color:"var(--text-primary)" }}
-          className="line-clamp-2 group-hover:text-orange-600 transition-colors">
+          className="line-clamp-2 group-hover:text-black transition-colors">
           {article.title}
         </h3>
         <p style={{ fontSize:11, color:"var(--text-light)", marginTop:2, fontFamily:MR }}>{ago}</p>
@@ -112,7 +112,7 @@ export default function NewsCard({ article, variant = "default" }: Props) {
       <div className="flex-1 min-w-0">
         <div className="mb-2"><CatBadge name={catName} color={catColor} /></div>
         <h3 style={{ fontFamily:MR, fontWeight:700, fontSize:"var(--fs-md)", lineHeight:1.4, color:"var(--text-primary)" }}
-          className="line-clamp-2 mb-1 group-hover:text-orange-600 transition-colors">
+          className="line-clamp-2 mb-1 group-hover:text-black transition-colors">
           {article.title}
         </h3>
         <p style={{ fontSize:"var(--fs-sm)", color:"var(--text-secondary)", fontFamily:MR }} className="line-clamp-2 mb-2">

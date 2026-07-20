@@ -25,7 +25,7 @@ export default function Sidebar() {
             <img src="/viral-katta-square.png" alt="ViralKatta" className="w-full h-full object-contain" />
           </div>
           <div>
-            <div className="font-display font-bold text-lg text-orange-400 leading-none">ViralKatta</div>
+            <div className="font-display font-bold text-lg text-yellow-300 leading-none">ViralKatta</div>
             <div className="text-xs text-gray-500">Admin Panel</div>
           </div>
         </Link>
@@ -41,7 +41,7 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? "admin-nav-active shadow-lg shadow-orange-900/30"
+                  ? "admin-nav-active shadow-lg shadow-black/30"
                   : "text-gray-400 hover:text-white hover:bg-gray-800"
               }`}
             >
@@ -77,7 +77,7 @@ export default function Sidebar() {
 // Async badge for pending count
 function PendingBadge() {
   return (
-    <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+    <span className="ml-auto bg-yellow-300 text-black text-xs font-bold px-2 py-0.5 rounded-full">
       •
     </span>
   );

@@ -186,7 +186,7 @@ export default function QueuePage() {
           <h1 className="text-2xl font-bold text-gray-900">Pending Queue</h1>
           <p className="text-gray-500 text-sm mt-1">{total} बातम्या review साठी</p>
         </div>
-        <button onClick={loadQueue} className="px-4 py-2 bg-orange-100 text-orange-700 rounded-xl text-sm font-medium hover:bg-orange-200 transition-colors">
+        <button onClick={loadQueue} className="px-4 py-2 bg-yellow-100 text-black rounded-xl text-sm font-medium hover:bg-yellow-200 transition-colors">
           🔄 Refresh
         </button>
       </div>
@@ -211,7 +211,7 @@ export default function QueuePage() {
             </button>
             {selected.sourceUrl && (
               <a href={selected.sourceUrl} target="_blank" rel="noopener noreferrer"
-                className="text-orange-500 hover:underline text-xs">
+                className="text-black hover:underline text-xs">
                 मूळ बातमी ↗
               </a>
             )}
@@ -262,7 +262,7 @@ export default function QueuePage() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-black transition-colors disabled:opacity-50"
                 >
                   {uploading ? "Uploading..." : "📁 Image Upload करा"}
                 </button>
@@ -272,23 +272,23 @@ export default function QueuePage() {
                   <input
                     type="url"
                     placeholder="किंवा image URL paste करा..."
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-yellow-400"
                     onBlur={(e) => handleImageUrl(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleImageUrl((e.target as HTMLInputElement).value)}
                   />
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-orange-100 bg-orange-50 p-4">
+              <div className="mt-4 rounded-xl border border-yellow-200 bg-yellow-100 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div>
-                    <p className="text-sm font-bold text-orange-900">Manual Thumbnail Prompt</p>
-                    <p className="text-xs text-orange-700 mt-0.5">
+                    <p className="text-sm font-bold text-yellow-950">Manual Thumbnail Prompt</p>
+                    <p className="text-xs text-black mt-0.5">
                       हा prompt वापरून thumbnail manually generate करा आणि मग upload करा.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className="px-2.5 py-1 rounded-full bg-white text-xs font-semibold text-orange-700 border border-orange-200">
+                    <span className="px-2.5 py-1 rounded-full bg-white text-xs font-semibold text-black border border-yellow-300">
                       {selected.thumbnailMode || "PROMPT_ONLY"}
                     </span>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
@@ -303,7 +303,7 @@ export default function QueuePage() {
                     {selected.thumbnailPrompt ? (
                       <button
                         onClick={() => copyThumbnailPrompt(selected.thumbnailPrompt || "")}
-                        className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700"
+                        className="px-3 py-1 bg-black text-white rounded-lg text-xs font-semibold hover:bg-gray-900"
                       >
                         Copy Prompt
                       </button>
@@ -311,7 +311,7 @@ export default function QueuePage() {
                       <button
                         onClick={() => generateThumbnailPrompt(selected)}
                         disabled={prompting === selected.id}
-                        className="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700 disabled:opacity-50"
+                        className="px-3 py-1 bg-black text-white rounded-lg text-xs font-semibold hover:bg-gray-900 disabled:opacity-50"
                       >
                         {prompting === selected.id ? "Generating..." : "Generate Prompt"}
                       </button>
@@ -320,11 +320,11 @@ export default function QueuePage() {
                 </div>
 
                 {selected.originalImageUrl && (
-                  <div className="mb-3 rounded-lg bg-white border border-orange-100 p-3">
+                  <div className="mb-3 rounded-lg bg-white border border-yellow-200 p-3">
                     <p className="text-xs font-semibold text-gray-700 mb-2">Source thumbnail reference available</p>
                     <div className="flex flex-wrap items-center gap-3">
                       <a href={selected.originalImageUrl} target="_blank" rel="noopener noreferrer"
-                        className="text-xs text-orange-700 underline">
+                        className="text-xs text-black underline">
                         Open source thumbnail
                       </a>
                       <button
@@ -342,15 +342,15 @@ export default function QueuePage() {
                     readOnly
                     value={selected.thumbnailPrompt}
                     rows={7}
-                    className="w-full rounded-lg border border-orange-100 bg-white p-3 text-xs leading-5 text-gray-800 focus:outline-none"
+                    className="w-full rounded-lg border border-yellow-200 bg-white p-3 text-xs leading-5 text-gray-800 focus:outline-none"
                   />
                 ) : (
-                  <div className="text-sm text-orange-800 bg-white border border-orange-100 rounded-lg p-3">
+                  <div className="text-sm text-yellow-900 bg-white border border-yellow-200 rounded-lg p-3">
                     <p className="mb-3">Prompt अजून generate झालेला नाही. खालील button वापरून prompt generate करा.</p>
                     <button
                       onClick={() => generateThumbnailPrompt(selected)}
                       disabled={prompting === selected.id}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 disabled:opacity-50"
+                      className="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-900 disabled:opacity-50"
                     >
                       {prompting === selected.id ? "Generating prompt..." : "Generate Thumbnail Prompt"}
                     </button>
@@ -377,14 +377,14 @@ export default function QueuePage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Title</label>
               <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100" />
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100" />
             </div>
 
             {/* Category */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
               <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-orange-400">
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-yellow-400">
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
@@ -395,14 +395,14 @@ export default function QueuePage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Excerpt</label>
               <textarea rows={3} value={editExcerpt} onChange={(e) => setEditExcerpt(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-orange-400 resize-none" />
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-yellow-400 resize-none" />
             </div>
 
             {/* Content */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Content</label>
               <textarea rows={10} value={editContent} onChange={(e) => setEditContent(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-orange-400 resize-none text-sm" />
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-marathi text-gray-900 focus:outline-none focus:border-yellow-400 resize-none text-sm" />
             </div>
           </div>
 
@@ -429,7 +429,7 @@ export default function QueuePage() {
         <div className="space-y-4">
           {articles.map((article) => (
             <div key={article.id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 hover:shadow-md transition-all overflow-hidden">
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-yellow-300 hover:shadow-md transition-all overflow-hidden">
               <div className="flex gap-0">
                 {/* Thumbnail preview */}
                 <div className="relative flex-shrink-0 bg-black" style={{ width: "160px", aspectRatio: "3/2" }}>
@@ -465,7 +465,7 @@ export default function QueuePage() {
                       </span>
                     )}
                     {!article.thumbnailPrompt && (
-                      <span className="text-xs text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">
+                      <span className="text-xs text-black bg-yellow-100 px-2 py-0.5 rounded-full">
                         Prompt missing
                       </span>
                     )}
@@ -481,7 +481,7 @@ export default function QueuePage() {
               {/* Actions */}
               <div className="flex items-center gap-2 px-4 py-3 border-t border-gray-50 bg-gray-50">
                 <button onClick={() => openArticle(article)}
-                  className="flex-1 py-2 bg-orange-50 text-orange-700 font-medium rounded-xl text-sm hover:bg-orange-100 transition-colors">
+                  className="flex-1 py-2 bg-yellow-100 text-black font-medium rounded-xl text-sm hover:bg-yellow-100 transition-colors">
                   ✏️ Review & Edit
                 </button>
                 {!article.thumbnailPrompt && (
