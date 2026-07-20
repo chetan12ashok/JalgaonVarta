@@ -81,15 +81,15 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
   return (
     <header
       className="sticky top-0 z-50 transition-shadow duration-200"
-      style={{ background: "var(--header-bg)", boxShadow: scrolled ? "0 2px 16px rgba(0,0,0,0.10)" : "none", borderBottom: "1px solid var(--border)" }}
+      style={{ background: "#050505", boxShadow: scrolled ? "0 10px 30px rgba(0,0,0,0.20)" : "none" }}
     >
       {/* Top bar */}
-      <div style={{ background: "#000", color: "#FFD735" }} className="py-1.5 px-4">
+      <div style={{ background: "#FFD735", color: "#050505" }} className="py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
           <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{today}</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full pulse inline-block" style={{ background: "#FFD735" }} />
+              <span className="w-2 h-2 rounded-full pulse inline-block" style={{ background: "#050505" }} />
               <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>थेट बातम्या</span>
             </span>
           </div>
@@ -97,15 +97,25 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
       </div>
 
       {/* Main header */}
-      <div className="max-w-7xl mx-auto px-4 py-2.5 md:py-3 flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-4 py-3 md:py-3.5 flex items-center gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center flex-shrink-0 group" aria-label="ViralKatta home">
-          <img
-            src="/viral-katta-landscape.png"
-            alt="ViralKatta"
-            className="transition-transform group-hover:scale-[1.02]"
-            style={{ width: "clamp(220px, 26vw, 330px)", height: 78, objectFit: "contain", objectPosition: "left center" }}
-          />
+          <span
+            className="block transition-transform group-hover:scale-[1.02]"
+            style={{
+              background: "#FFD735",
+              border: "1px solid rgba(255,255,255,0.18)",
+              borderRadius: 14,
+              boxShadow: "0 12px 28px rgba(0,0,0,0.28)",
+              padding: "6px 10px",
+            }}
+          >
+            <img
+              src="/viral-katta-landscape.png"
+              alt="ViralKatta"
+              style={{ width: "clamp(188px, 24vw, 300px)", height: 62, objectFit: "contain", objectPosition: "left center" }}
+            />
+          </span>
         </Link>
 
         {/* Search — desktop */}
@@ -118,14 +128,14 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleSearch}
               style={{
-                background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text-primary)",
+                background: "#ffffff", border: "2px solid #FFD735", color: "#111111",
                 fontFamily: "'Noto Sans Devanagari', sans-serif",
               }}
-              className="w-full pl-4 pr-11 py-2.5 rounded-xl text-sm focus:outline-none transition-all"
+              className="w-full pl-4 pr-11 py-2.5 rounded-xl text-sm focus:outline-none transition-all shadow-sm"
             />
             <button
               onClick={() => query.trim() && (window.location.href = `/search?q=${encodeURIComponent(query)}`)}
-              style={{ color: "var(--brand)" }}
+              style={{ color: "#111111" }}
               className="absolute right-3 top-1/2 -translate-y-1/2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +172,7 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
           <button
             onClick={() => setSearchOpen(!searchOpen)}
             className="md:hidden p-2 rounded-lg"
-            style={{ color: "var(--text-secondary)" }}
+            style={{ color: "#FFD735" }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -173,7 +183,7 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden p-2 rounded-lg"
-            style={{ color: "var(--text-secondary)" }}
+            style={{ color: "#FFD735" }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {menuOpen
@@ -195,7 +205,7 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleSearch}
             style={{
-              background: "var(--bg)", border: "1.5px solid var(--border)", color: "var(--text-primary)",
+              background: "#ffffff", border: "2px solid #FFD735", color: "#111111",
               fontFamily: "'Noto Sans Devanagari', sans-serif",
             }}
             className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none"
@@ -205,7 +215,7 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
 
       {/* Nav bar */}
       <nav
-        style={{ borderTop: "1px solid var(--border)", background: "var(--header-bg)" }}
+        style={{ borderTop: "1px solid rgba(255, 215, 53, 0.24)", background: "#050505" }}
         className={`${menuOpen ? "block" : "hidden md:block"}`}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -217,10 +227,9 @@ export default function Header({ hideDarkMode = false }: HeaderProps) {
                   onClick={() => setMenuOpen(false)}
                   style={{
                     fontFamily: "'Noto Sans Devanagari', sans-serif",
-                    color: "var(--text-secondary)",
                     fontSize: "var(--fs-sm)",
                   }}
-                  className="flex items-center gap-1.5 px-3 py-2.5 font-semibold hover:text-[--brand] transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-3 py-2.5 font-semibold text-white hover:text-yellow-300 transition-colors whitespace-nowrap"
                 >
                   <span>{cat.icon}</span>
                   <span>{cat.name}</span>
